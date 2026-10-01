@@ -10,6 +10,7 @@
 - Added a database trigger preventing customer ownership/status mutation and keeping workflow status server-controlled.
 - Added a Stage 2 migration record and RLS contract test notes.
 - No mock customer, organization, or service-request data was added.
+- Added constrained self-service customer workspace provisioning for authenticated users without an existing membership.
 
 
 ## 2026-10-01
