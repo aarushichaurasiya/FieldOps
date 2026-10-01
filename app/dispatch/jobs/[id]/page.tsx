@@ -28,7 +28,7 @@ export default async function DispatchJobPage({ params, searchParams }: Props) {
   if (!result.job) notFound();
 
   const { technicians } = await listAvailableTechnicians();
-  const job = result.job as typeof result.job & { service_requests: any };
+  const job = result.job;
   const request = job.service_requests;
 
   const activeAssignment = result.assignments.find((assignment) => !assignment.unassigned_at);
