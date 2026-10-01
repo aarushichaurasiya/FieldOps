@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createRequest } from "../actions";
+import { createRequest, provisionWorkspace } from "../actions";
 import { getCurrentCustomer, listCustomerSites } from "@/lib/requests";
 
 type Props = { searchParams: Promise<{ error?: string }> };
@@ -28,9 +28,12 @@ export default async function NewRequestPage({ searchParams }: Props) {
           <section className="mt-8 rounded-3xl border border-violet-200 bg-white p-7 shadow-sm">
             <h2 className="font-semibold">Customer workspace not provisioned</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Authentication is working, but this account does not have a customer record linked to it. No placeholder customer will be created automatically.
+              Authentication is working, but this account does not have a customer workspace yet. The setup below creates only your own organization, customer record, and membership—no placeholder data.
             </p>
-            <Link href="/dashboard" className="mt-5 inline-flex rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Back to dashboard</Link>
+            <form action={provisionWorkspace} className="mt-5">
+              <button className="rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Set up my customer workspace</button>
+            </form>
+            <Link href="/dashboard" className="mt-3 inline-flex rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-[var(--color-blue)]">Back to dashboard</Link>
           </section>
         ) : (
           <form action={createRequest} className="mt-8 space-y-6 rounded-3xl border border-slate-200 bg-white p-7 shadow-[0_20px_60px_rgba(17,20,57,0.08)]">
