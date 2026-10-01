@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getDispatchJob, listAvailableTechnicians } from "@/lib/dispatch";
-import { assignJobAction, unassignJobAction } from "../actions";
+import { assignJobAction, unassignJobAction } from "../../actions";
 
 const statusStyles: Record<string, string> = {
   requested: "bg-violet-100 text-violet-800",
