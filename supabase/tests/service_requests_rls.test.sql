@@ -1,0 +1,10 @@
+-- Stage 2 RLS contract.
+-- Run with the Supabase local pgTAP suite once the remote migration is pulled locally.
+-- The production request flow must satisfy:
+-- 1. Customer can only read requests where customer_id belongs to auth.uid().
+-- 2. Customer can only create a request for their own customer record.
+-- 3. Customer cannot select or attach another customer's site.
+-- 4. Customer cannot mutate organization_id, customer_id, site_id, or status.
+-- 5. Dispatcher/admin may operate on requests within their organization.
+-- 6. Technician access remains limited to assigned-job request resources.
+-- 7. Request create/update writes an audit event in the same database transaction.
