@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { getCurrentCustomer, listCustomerRequests } from "@/lib/requests";
+import { provisionWorkspace } from "./actions";
 
 const statusStyles: Record<string, string> = {
   submitted: "bg-violet-100 text-violet-800",
@@ -19,7 +20,10 @@ const priorityStyles: Record<string, string> = {
   urgent: "text-red-700",
 };
 
-export default async function RequestsPage() {
+type Props = { searchParams: Promise<{ error?: string }> };
+
+export default async function RequestsPage({ searchParams }: Props) {
+  const params = await searchParams;
   const { user, customer } = await getCurrentCustomer();
   if (!user) redirect("/auth/login");
 
@@ -41,13 +45,18 @@ export default async function RequestsPage() {
           </div>
         </header>
 
+        {params.error ? <p className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{params.error}</p> : null}
+
         {!customer ? (
           <section className="mt-10 rounded-3xl border border-violet-200 bg-white p-8 shadow-sm">
             <div className="mb-4 h-10 w-10 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400" />
             <h2 className="text-xl font-semibold">Customer provisioning required</h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
-              Your Supabase Auth account is valid, but it is not linked to a customer record yet. FieldOps intentionally does not create fake customer or organization data.
+              Your Supabase Auth account is valid, but it is not linked to a customer workspace yet. Create your own real workspace to begin using the customer workflow.
             </p>
+            <form action={provisionWorkspace} className="mt-5">
+              <button className="rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Set up my customer workspace</button>
+            </form>
           </section>
         ) : (
           <section className="mt-10 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(17,20,57,0.08)]">
