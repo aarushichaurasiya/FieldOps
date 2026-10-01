@@ -26,7 +26,7 @@ Implemented:
 
 ## Stage 1 — Supabase database and authentication
 
-**Status: database/auth implementation completed; Vercel deployment gate pending.**
+**Status: completed.**
 
 **Goal:** establish the secure system of record.
 
@@ -77,29 +77,34 @@ Implemented:
 - Auth profile trigger verified.
 - Active-assignment unique index verified.
 - Supabase security advisor returned no security lints.
-- Performance advisor currently reports only INFO-level unused-index notices because the database has no production workload yet.
+- Production Vercel sign-up, email confirmation, sign-in, and protected `/dashboard` flow verified manually.
 
-### Remaining Stage 1 deployment gate
+### Stage 1 exit verification
 
-- Connect/identify the FieldOps Vercel project.
-- Configure Supabase URL and publishable key in Vercel preview and production environments.
-- Configure Supabase Auth redirect URLs for each deployed environment.
-- Verify preview sign-up, email confirmation, sign-in, and `/dashboard`.
-- Keep service-role/secret keys server-only.
+- Vercel deployment is live at the current FieldOps deployment URL.
+- Supabase URL and publishable key are configured in the deployed application.
+- Production and localhost auth callback URLs are configured.
+- Production sign-in and protected `/dashboard` were verified with a real Supabase Auth user.
+- Service-role/secret keys remain server-only.
 
-**Exit gate:** authenticated users can be identified and authorized; database constraints and RLS prevent cross-user/resource access; preview deployment proves the auth flow.
+**Exit gate: passed. Authenticated users can be identified and the protected dashboard can read the user's profile and membership state.
 
 ## Stage 2 — Customer request intake
 
+**Status: implementation in progress; provisioning + deployed end-to-end verification remain.**
+
 **Goal:** complete the first business action.
 
-Implement:
-- Customer dashboard.
-- Create service request form.
-- Request validation.
-- Request detail page.
+Implemented:
+- Customer request workspace at `/requests`.
+- Create service request form at `/requests/new`.
+- Zod request validation.
+- Request detail/update page.
 - Request list/status display.
-- Server-side creation and audit event.
+- Server-side creation/update with RLS-aware Supabase RPCs.
+- Transactional request + audit-event writes inside PostgreSQL functions.
+- Customer site visibility tightened to customer-owned sites.
+- Customer/status ownership changes blocked at the database trigger layer.
 
 API:
 - `POST /api/v1/requests`
@@ -113,9 +118,10 @@ Supabase:
 - Add indexes for customer/status/date.
 
 Vercel:
-- Deploy preview and validate the request flow against preview Supabase data.
+- Deploy preview/production and validate the request flow with a provisioned customer account.
+- Do not seed placeholder customer/organization rows just to make the UI appear populated.
 
-**Exit gate:** customer creates a request and can only see authorized requests.
+**Exit gate:** provisioned customer creates a real request, sees only authorized requests, and the request/audit write is atomic.
 
 ## Stage 3 — Dispatcher operations and assignment
 
