@@ -70,7 +70,7 @@ async function adminUsers() {
   return body?.users ?? [];
 }
 
-async function ensureAuthUser(email, fullName, phone) {
+async function ensureAuthUser(email, fullName) {
   const users = await adminUsers();
   const existing = users.find((user) => user.email?.toLowerCase() === email);
 
@@ -163,17 +163,14 @@ async function main() {
   const dispatcherId = await ensureAuthUser(
     "dispatcher@fieldops.test",
     "Stage 3 Dispatcher",
-    "+91 90000 30001",
   );
   const technicianId = await ensureAuthUser(
     "technician@fieldops.test",
     "Stage 3 Technician",
-    "+91 90000 30002",
   );
   const customerUserId = await ensureAuthUser(
     "customer@fieldops.test",
     "Stage 3 Customer",
-    "+91 90000 30003",
   );
 
   const organization = await upsert(
