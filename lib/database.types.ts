@@ -1,1 +1,1032 @@
-{"types":"export type Json =\n  | string\n  | number\n  | boolean\n  | null\n  | { [key: string]: Json | undefined }\n  | Json[]\n\nexport type Database = {\n  // Allows to automatically instantiate createClient with right options\n  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)\n  __InternalSupabase: {\n    PostgrestVersion: \"14.18\"\n  }\n  public: {\n    Tables: {\n      assignments: {\n        Row: {\n          assigned_at: string\n          assigned_by: string\n          id: string\n          job_id: string\n          technician_id: string\n          unassigned_at: string | null\n        }\n        Insert: {\n          assigned_at?: string\n          assigned_by: string\n          id?: string\n          job_id: string\n          technician_id: string\n          unassigned_at?: string | null\n        }\n        Update: {\n          assigned_at?: string\n          assigned_by?: string\n          id?: string\n          job_id?: string\n          technician_id?: string\n          unassigned_at?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"assignments_job_id_fkey\"\n            columns: [\"job_id\"]\n            isOneToOne: false\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      attachments: {\n        Row: {\n          created_at: string\n          id: string\n          job_id: string\n          media_type: string\n          size_bytes: number\n          storage_key: string\n          uploaded_by: string\n        }\n        Insert: {\n          created_at?: string\n          id?: string\n          job_id: string\n          media_type: string\n          size_bytes: number\n          storage_key: string\n          uploaded_by: string\n        }\n        Update: {\n          created_at?: string\n          id?: string\n          job_id?: string\n          media_type?: string\n          size_bytes?: number\n          storage_key?: string\n          uploaded_by?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"attachments_job_id_fkey\"\n            columns: [\"job_id\"]\n            isOneToOne: false\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      audit_events: {\n        Row: {\n          action: string\n          actor_id: string | null\n          created_at: string\n          entity_id: string | null\n          entity_type: string\n          id: string\n          metadata: Json\n          organization_id: string | null\n        }\n        Insert: {\n          action: string\n          actor_id?: string | null\n          created_at?: string\n          entity_id?: string | null\n          entity_type: string\n          id?: string\n          metadata?: Json\n          organization_id?: string | null\n        }\n        Update: {\n          action?: string\n          actor_id?: string | null\n          created_at?: string\n          entity_id?: string | null\n          entity_type?: string\n          id?: string\n          metadata?: Json\n          organization_id?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"audit_events_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      customers: {\n        Row: {\n          address_line1: string | null\n          address_line2: string | null\n          city: string | null\n          country: string | null\n          created_at: string\n          email: string | null\n          id: string\n          name: string\n          organization_id: string\n          phone: string | null\n          postal_code: string | null\n          site_reference: string | null\n          state: string | null\n          updated_at: string\n          user_id: string | null\n        }\n        Insert: {\n          address_line1?: string | null\n          address_line2?: string | null\n          city?: string | null\n          country?: string | null\n          created_at?: string\n          email?: string | null\n          id?: string\n          name: string\n          organization_id: string\n          phone?: string | null\n          postal_code?: string | null\n          site_reference?: string | null\n          state?: string | null\n          updated_at?: string\n          user_id?: string | null\n        }\n        Update: {\n          address_line1?: string | null\n          address_line2?: string | null\n          city?: string | null\n          country?: string | null\n          created_at?: string\n          email?: string | null\n          id?: string\n          name?: string\n          organization_id?: string\n          phone?: string | null\n          postal_code?: string | null\n          site_reference?: string | null\n          state?: string | null\n          updated_at?: string\n          user_id?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"customers_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      invoice_lines: {\n        Row: {\n          created_at: string\n          description: string\n          id: string\n          invoice_id: string\n          line_total_cents: number | null\n          quantity: number\n          unit_price_cents: number\n        }\n        Insert: {\n          created_at?: string\n          description: string\n          id?: string\n          invoice_id: string\n          line_total_cents?: number | null\n          quantity: number\n          unit_price_cents: number\n        }\n        Update: {\n          created_at?: string\n          description?: string\n          id?: string\n          invoice_id?: string\n          line_total_cents?: number | null\n          quantity?: number\n          unit_price_cents?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"invoice_lines_invoice_id_fkey\"\n            columns: [\"invoice_id\"]\n            isOneToOne: false\n            referencedRelation: \"invoices\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      invoices: {\n        Row: {\n          created_at: string\n          currency: string\n          document_reference: string | null\n          id: string\n          issued_at: string | null\n          job_id: string\n          number: string\n          status: Database[\"public\"][\"Enums\"][\"invoice_status\"]\n          subtotal_cents: number\n          tax_cents: number\n          total_cents: number\n          updated_at: string\n        }\n        Insert: {\n          created_at?: string\n          currency?: string\n          document_reference?: string | null\n          id?: string\n          issued_at?: string | null\n          job_id: string\n          number: string\n          status?: Database[\"public\"][\"Enums\"][\"invoice_status\"]\n          subtotal_cents?: number\n          tax_cents?: number\n          total_cents?: number\n          updated_at?: string\n        }\n        Update: {\n          created_at?: string\n          currency?: string\n          document_reference?: string | null\n          id?: string\n          issued_at?: string | null\n          job_id?: string\n          number?: string\n          status?: Database[\"public\"][\"Enums\"][\"invoice_status\"]\n          subtotal_cents?: number\n          tax_cents?: number\n          total_cents?: number\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"invoices_job_id_fkey\"\n            columns: [\"job_id\"]\n            isOneToOne: true\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      jobs: {\n        Row: {\n          completed_at: string | null\n          completion_notes: string | null\n          created_at: string\n          id: string\n          organization_id: string\n          request_id: string\n          scheduled_end: string | null\n          scheduled_start: string | null\n          started_at: string | null\n          status: Database[\"public\"][\"Enums\"][\"job_status\"]\n          updated_at: string\n        }\n        Insert: {\n          completed_at?: string | null\n          completion_notes?: string | null\n          created_at?: string\n          id?: string\n          organization_id: string\n          request_id: string\n          scheduled_end?: string | null\n          scheduled_start?: string | null\n          started_at?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"job_status\"]\n          updated_at?: string\n        }\n        Update: {\n          completed_at?: string | null\n          completion_notes?: string | null\n          created_at?: string\n          id?: string\n          organization_id?: string\n          request_id?: string\n          scheduled_end?: string | null\n          scheduled_start?: string | null\n          started_at?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"job_status\"]\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"jobs_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"jobs_request_id_fkey\"\n            columns: [\"request_id\"]\n            isOneToOne: false\n            referencedRelation: \"service_requests\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"jobs_request_id_organization_id_fkey\"\n            columns: [\"request_id\", \"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"service_requests\"\n            referencedColumns: [\"id\", \"organization_id\"]\n          },\n        ]\n      }\n      organization_memberships: {\n        Row: {\n          created_at: string\n          id: string\n          organization_id: string\n          role: Database[\"public\"][\"Enums\"][\"app_role\"]\n          status: Database[\"public\"][\"Enums\"][\"membership_status\"]\n          updated_at: string\n          user_id: string\n        }\n        Insert: {\n          created_at?: string\n          id?: string\n          organization_id: string\n          role: Database[\"public\"][\"Enums\"][\"app_role\"]\n          status?: Database[\"public\"][\"Enums\"][\"membership_status\"]\n          updated_at?: string\n          user_id: string\n        }\n        Update: {\n          created_at?: string\n          id?: string\n          organization_id?: string\n          role?: Database[\"public\"][\"Enums\"][\"app_role\"]\n          status?: Database[\"public\"][\"Enums\"][\"membership_status\"]\n          updated_at?: string\n          user_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"organization_memberships_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      organizations: {\n        Row: {\n          created_at: string\n          id: string\n          name: string\n          slug: string\n          updated_at: string\n        }\n        Insert: {\n          created_at?: string\n          id?: string\n          name: string\n          slug: string\n          updated_at?: string\n        }\n        Update: {\n          created_at?: string\n          id?: string\n          name?: string\n          slug?: string\n          updated_at?: string\n        }\n        Relationships: []\n      }\n      part_usages: {\n        Row: {\n          created_at: string\n          id: string\n          job_id: string\n          part_name: string\n          quantity: number\n          unit_price_snapshot_cents: number\n        }\n        Insert: {\n          created_at?: string\n          id?: string\n          job_id: string\n          part_name: string\n          quantity: number\n          unit_price_snapshot_cents: number\n        }\n        Update: {\n          created_at?: string\n          id?: string\n          job_id?: string\n          part_name?: string\n          quantity?: number\n          unit_price_snapshot_cents?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"part_usages_job_id_fkey\"\n            columns: [\"job_id\"]\n            isOneToOne: false\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      profiles: {\n        Row: {\n          created_at: string\n          full_name: string | null\n          id: string\n          phone: string | null\n          status: Database[\"public\"][\"Enums\"][\"user_status\"]\n          updated_at: string\n        }\n        Insert: {\n          created_at?: string\n          full_name?: string | null\n          id: string\n          phone?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"user_status\"]\n          updated_at?: string\n        }\n        Update: {\n          created_at?: string\n          full_name?: string | null\n          id?: string\n          phone?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"user_status\"]\n          updated_at?: string\n        }\n        Relationships: []\n      }\n      service_requests: {\n        Row: {\n          created_at: string\n          customer_id: string\n          description: string | null\n          id: string\n          organization_id: string\n          priority: Database[\"public\"][\"Enums\"][\"request_priority\"]\n          site_id: string | null\n          status: Database[\"public\"][\"Enums\"][\"request_status\"]\n          title: string\n          updated_at: string\n        }\n        Insert: {\n          created_at?: string\n          customer_id: string\n          description?: string | null\n          id?: string\n          organization_id: string\n          priority?: Database[\"public\"][\"Enums\"][\"request_priority\"]\n          site_id?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"request_status\"]\n          title: string\n          updated_at?: string\n        }\n        Update: {\n          created_at?: string\n          customer_id?: string\n          description?: string | null\n          id?: string\n          organization_id?: string\n          priority?: Database[\"public\"][\"Enums\"][\"request_priority\"]\n          site_id?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"request_status\"]\n          title?: string\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"service_requests_customer_id_fkey\"\n            columns: [\"customer_id\"]\n            isOneToOne: false\n            referencedRelation: \"customers\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"service_requests_customer_id_organization_id_fkey\"\n            columns: [\"customer_id\", \"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"customers\"\n            referencedColumns: [\"id\", \"organization_id\"]\n          },\n          {\n            foreignKeyName: \"service_requests_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"service_requests_site_id_fkey\"\n            columns: [\"site_id\"]\n            isOneToOne: false\n            referencedRelation: \"sites\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"service_requests_site_id_organization_id_fkey\"\n            columns: [\"site_id\", \"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"sites\"\n            referencedColumns: [\"id\", \"organization_id\"]\n          },\n        ]\n      }\n      sign_offs: {\n        Row: {\n          created_at: string\n          customer_id: string\n          id: string\n          job_id: string\n          notes: string | null\n          organization_id: string\n          signature_reference: string | null\n          signed_at: string\n          signer_name: string\n        }\n        Insert: {\n          created_at?: string\n          customer_id: string\n          id?: string\n          job_id: string\n          notes?: string | null\n          organization_id: string\n          signature_reference?: string | null\n          signed_at?: string\n          signer_name: string\n        }\n        Update: {\n          created_at?: string\n          customer_id?: string\n          id?: string\n          job_id?: string\n          notes?: string | null\n          organization_id?: string\n          signature_reference?: string | null\n          signed_at?: string\n          signer_name?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"sign_offs_customer_id_fkey\"\n            columns: [\"customer_id\"]\n            isOneToOne: false\n            referencedRelation: \"customers\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"sign_offs_customer_id_organization_id_fkey\"\n            columns: [\"customer_id\", \"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"customers\"\n            referencedColumns: [\"id\", \"organization_id\"]\n          },\n          {\n            foreignKeyName: \"sign_offs_job_id_fkey\"\n            columns: [\"job_id\"]\n            isOneToOne: true\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"sign_offs_job_id_organization_id_fkey\"\n            columns: [\"job_id\", \"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\", \"organization_id\"]\n          },\n          {\n            foreignKeyName: \"sign_offs_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      sites: {\n        Row: {\n          address_line1: string | null\n          address_line2: string | null\n          city: string | null\n          country: string | null\n          created_at: string\n          customer_id: string\n          id: string\n          name: string\n          organization_id: string\n          postal_code: string | null\n          state: string | null\n          updated_at: string\n        }\n        Insert: {\n          address_line1?: string | null\n          address_line2?: string | null\n          city?: string | null\n          country?: string | null\n          created_at?: string\n          customer_id: string\n          id?: string\n          name: string\n          organization_id: string\n          postal_code?: string | null\n          state?: string | null\n          updated_at?: string\n        }\n        Update: {\n          address_line1?: string | null\n          address_line2?: string | null\n          city?: string | null\n          country?: string | null\n          created_at?: string\n          customer_id?: string\n          id?: string\n          name?: string\n          organization_id?: string\n          postal_code?: string | null\n          state?: string | null\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"sites_customer_id_fkey\"\n            columns: [\"customer_id\"]\n            isOneToOne: false\n            referencedRelation: \"customers\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"sites_organization_id_fkey\"\n            columns: [\"organization_id\"]\n            isOneToOne: false\n            referencedRelation: \"organizations\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      work_logs: {\n        Row: {\n          created_at: string\n          ended_at: string | null\n          id: string\n          job_id: string\n          note: string | null\n          started_at: string | null\n          technician_id: string\n        }\n        Insert: {\n          created_at?: string\n          ended_at?: string | null\n          id?: string\n          job_id: string\n          note?: string | null\n          started_at?: string | null\n          technician_id: string\n        }\n        Update: {\n          created_at?: string\n          ended_at?: string | null\n          id?: string\n          job_id?: string\n          note?: string | null\n          started_at?: string | null\n          technician_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"work_logs_job_id_fkey\"\n            columns: [\"job_id\"]\n            isOneToOne: false\n            referencedRelation: \"jobs\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n    }\n    Views: {\n      [_ in never]: never\n    }\n    Functions: {\n      assign_job: {\n        Args: { p_job_id: string; p_technician_id: string }\n        Returns: {\n          assigned_at: string\n          assigned_by: string\n          id: string\n          job_id: string\n          technician_id: string\n          unassigned_at: string | null\n        }\n        SetofOptions: {\n          from: \"*\"\n          to: \"assignments\"\n          isOneToOne: true\n          isSetofReturn: false\n        }\n      }\n      create_job_for_request: {\n        Args: { p_request_id: string }\n        Returns: {\n          completed_at: string | null\n          completion_notes: string | null\n          created_at: string\n          id: string\n          organization_id: string\n          request_id: string\n          scheduled_end: string | null\n          scheduled_start: string | null\n          started_at: string | null\n          status: Database[\"public\"][\"Enums\"][\"job_status\"]\n          updated_at: string\n        }\n        SetofOptions: {\n          from: \"*\"\n          to: \"jobs\"\n          isOneToOne: true\n          isSetofReturn: false\n        }\n      }\n      create_service_request: {\n        Args: {\n          p_customer_id: string\n          p_description: string\n          p_priority: string\n          p_site_id: string\n          p_title: string\n        }\n        Returns: {\n          created_at: string\n          customer_id: string\n          description: string | null\n          id: string\n          organization_id: string\n          priority: Database[\"public\"][\"Enums\"][\"request_priority\"]\n          site_id: string | null\n          status: Database[\"public\"][\"Enums\"][\"request_status\"]\n          title: string\n          updated_at: string\n        }\n        SetofOptions: {\n          from: \"*\"\n          to: \"service_requests\"\n          isOneToOne: true\n          isSetofReturn: false\n        }\n      }\n      provision_customer_workspace: {\n        Args: never\n        Returns: {\n          address_line1: string | null\n          address_line2: string | null\n          city: string | null\n          country: string | null\n          created_at: string\n          email: string | null\n          id: string\n          name: string\n          organization_id: string\n          phone: string | null\n          postal_code: string | null\n          site_reference: string | null\n          state: string | null\n          updated_at: string\n          user_id: string | null\n        }\n        SetofOptions: {\n          from: \"*\"\n          to: \"customers\"\n          isOneToOne: true\n          isSetofReturn: false\n        }\n      }\n      unassign_job: {\n        Args: { p_assignment_id: string; p_job_id: string }\n        Returns: {\n          assigned_at: string\n          assigned_by: string\n          id: string\n          job_id: string\n          technician_id: string\n          unassigned_at: string | null\n        }\n        SetofOptions: {\n          from: \"*\"\n          to: \"assignments\"\n          isOneToOne: true\n          isSetofReturn: false\n        }\n      }\n      update_service_request: {\n        Args: {\n          p_description: string\n          p_priority: string\n          p_request_id: string\n          p_title: string\n        }\n        Returns: {\n          created_at: string\n          customer_id: string\n          description: string | null\n          id: string\n          organization_id: string\n          priority: Database[\"public\"][\"Enums\"][\"request_priority\"]\n          site_id: string | null\n          status: Database[\"public\"][\"Enums\"][\"request_status\"]\n          title: string\n          updated_at: string\n        }\n        SetofOptions: {\n          from: \"*\"\n          to: \"service_requests\"\n          isOneToOne: true\n          isSetofReturn: false\n        }\n      }\n    }\n    Enums: {\n      app_role: \"customer\" | \"dispatcher\" | \"technician\" | \"admin\"\n      invoice_status: \"draft\" | \"issued\" | \"paid\" | \"void\"\n      job_status:\n        | \"requested\"\n        | \"assigned\"\n        | \"in_progress\"\n        | \"completed\"\n        | \"awaiting_signoff\"\n        | \"signed_off\"\n        | \"invoiced\"\n        | \"cancelled\"\n      membership_status: \"active\" | \"inactive\"\n      request_priority: \"low\" | \"normal\" | \"high\" | \"urgent\"\n      request_status:\n        | \"submitted\"\n        | \"accepted\"\n        | \"scheduled\"\n        | \"in_progress\"\n        | \"completed\"\n        | \"cancelled\"\n      user_status: \"active\" | \"inactive\"\n    }\n    CompositeTypes: {\n      [_ in never]: never\n    }\n  }\n}\n\ntype DatabaseWithoutInternals = Omit<Database, \"__InternalSupabase\">\n\ntype DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, \"public\">]\n\nexport type Tables<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof (DefaultSchema[\"Tables\"] & DefaultSchema[\"Views\"])\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends (DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &\n        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])\n    : never) = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &\n      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])[TableName] extends {\n      Row: infer R\n    }\n    ? R\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema[\"Tables\"] &\n        DefaultSchema[\"Views\"])\n    ? (DefaultSchema[\"Tables\"] &\n        DefaultSchema[\"Views\"])[DefaultSchemaTableNameOrOptions] extends {\n        Row: infer R\n      }\n      ? R\n      : never\n    : never\n\nexport type TablesInsert<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof DefaultSchema[\"Tables\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends (DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]\n    : never) = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {\n      Insert: infer I\n    }\n    ? I\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]\n    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {\n        Insert: infer I\n      }\n      ? I\n      : never\n    : never\n\nexport type TablesUpdate<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof DefaultSchema[\"Tables\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends (DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]\n    : never) = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {\n      Update: infer U\n    }\n    ? U\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]\n    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {\n        Update: infer U\n      }\n      ? U\n      : never\n    : never\n\nexport type Enums<\n  DefaultSchemaEnumNameOrOptions extends\n    | keyof DefaultSchema[\"Enums\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  EnumName extends (DefaultSchemaEnumNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"]\n    : never) = never,\n> = DefaultSchemaEnumNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"][EnumName]\n  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema[\"Enums\"]\n    ? DefaultSchema[\"Enums\"][DefaultSchemaEnumNameOrOptions]\n    : never\n\nexport type CompositeTypes<\n  PublicCompositeTypeNameOrOptions extends\n    | keyof DefaultSchema[\"CompositeTypes\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"]\n    : never) = never,\n> = PublicCompositeTypeNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"][CompositeTypeName]\n  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema[\"CompositeTypes\"]\n    ? DefaultSchema[\"CompositeTypes\"][PublicCompositeTypeNameOrOptions]\n    : never\n\nexport const Constants = {\n  public: {\n    Enums: {\n      app_role: [\"customer\", \"dispatcher\", \"technician\", \"admin\"],\n      invoice_status: [\"draft\", \"issued\", \"paid\", \"void\"],\n      job_status: [\n        \"requested\",\n        \"assigned\",\n        \"in_progress\",\n        \"completed\",\n        \"awaiting_signoff\",\n        \"signed_off\",\n        \"invoiced\",\n        \"cancelled\",\n      ],\n      membership_status: [\"active\", \"inactive\"],\n      request_priority: [\"low\", \"normal\", \"high\", \"urgent\"],\n      request_status: [\n        \"submitted\",\n        \"accepted\",\n        \"scheduled\",\n        \"in_progress\",\n        \"completed\",\n        \"cancelled\",\n      ],\n      user_status: [\"active\", \"inactive\"],\n    },\n  },\n} as const\n"}
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18"
+  }
+  public: {
+    Tables: {
+      assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          id: string
+          job_id: string
+          technician_id: string
+          unassigned_at: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          id?: string
+          job_id: string
+          technician_id: string
+          unassigned_at?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          id?: string
+          job_id?: string
+          technician_id?: string
+          unassigned_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attachments: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          media_type: string
+          size_bytes: number
+          storage_key: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          media_type: string
+          size_bytes: number
+          storage_key: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          media_type?: string
+          size_bytes?: number
+          storage_key?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+          organization_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          organization_id: string
+          phone: string | null
+          postal_code: string | null
+          site_reference: string | null
+          state: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          phone?: string | null
+          postal_code?: string | null
+          site_reference?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          phone?: string | null
+          postal_code?: string | null
+          site_reference?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_lines: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          line_total_cents: number | null
+          quantity: number
+          unit_price_cents: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          line_total_cents?: number | null
+          quantity: number
+          unit_price_cents: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          line_total_cents?: number | null
+          quantity?: number
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          currency: string
+          document_reference: string | null
+          id: string
+          issued_at: string | null
+          job_id: string
+          number: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal_cents: number
+          tax_cents: number
+          total_cents: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          document_reference?: string | null
+          id?: string
+          issued_at?: string | null
+          job_id: string
+          number: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal_cents?: number
+          tax_cents?: number
+          total_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          document_reference?: string | null
+          id?: string
+          issued_at?: string | null
+          job_id?: string
+          number?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal_cents?: number
+          tax_cents?: number
+          total_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          completed_at: string | null
+          completion_notes: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          request_id: string
+          scheduled_end: string | null
+          scheduled_start: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          request_id: string
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          request_id?: string
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_request_id_organization_id_fkey"
+            columns: ["request_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      organization_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      part_usages: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          part_name: string
+          quantity: number
+          unit_price_snapshot_cents: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          part_name: string
+          quantity: number
+          unit_price_snapshot_cents: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          part_name?: string
+          quantity?: number
+          unit_price_snapshot_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "part_usages_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          status: Database["public"]["Enums"]["user_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["user_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["user_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      service_requests: {
+        Row: {
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          organization_id: string
+          priority: Database["public"]["Enums"]["request_priority"]
+          site_id: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          organization_id: string
+          priority?: Database["public"]["Enums"]["request_priority"]
+          site_id?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          organization_id?: string
+          priority?: Database["public"]["Enums"]["request_priority"]
+          site_id?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_customer_id_organization_id_fkey"
+            columns: ["customer_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "service_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_site_id_organization_id_fkey"
+            columns: ["site_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      sign_offs: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          job_id: string
+          notes: string | null
+          organization_id: string
+          signature_reference: string | null
+          signed_at: string
+          signer_name: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          job_id: string
+          notes?: string | null
+          organization_id: string
+          signature_reference?: string | null
+          signed_at?: string
+          signer_name: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          job_id?: string
+          notes?: string | null
+          organization_id?: string
+          signature_reference?: string | null
+          signed_at?: string
+          signer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sign_offs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sign_offs_customer_id_organization_id_fkey"
+            columns: ["customer_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "sign_offs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sign_offs_job_id_organization_id_fkey"
+            columns: ["job_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "sign_offs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          name: string
+          organization_id: string
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          name: string
+          organization_id: string
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_logs: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          job_id: string
+          note: string | null
+          started_at: string | null
+          technician_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          job_id: string
+          note?: string | null
+          started_at?: string | null
+          technician_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          job_id?: string
+          note?: string | null
+          started_at?: string | null
+          technician_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      assign_job: {
+        Args: { p_job_id: string; p_technician_id: string }
+        Returns: {
+          assigned_at: string
+          assigned_by: string
+          id: string
+          job_id: string
+          technician_id: string
+          unassigned_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_job_for_request: {
+        Args: { p_request_id: string }
+        Returns: {
+          completed_at: string | null
+          completion_notes: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          request_id: string
+          scheduled_end: string | null
+          scheduled_start: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "jobs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_service_request: {
+        Args: {
+          p_customer_id: string
+          p_description: string
+          p_priority: string
+          p_site_id: string
+          p_title: string
+        }
+        Returns: {
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          organization_id: string
+          priority: Database["public"]["Enums"]["request_priority"]
+          site_id: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "service_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      provision_customer_workspace: {
+        Args: never
+        Returns: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          organization_id: string
+          phone: string | null
+          postal_code: string | null
+          site_reference: string | null
+          state: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      unassign_job: {
+        Args: { p_assignment_id: string; p_job_id: string }
+        Returns: {
+          assigned_at: string
+          assigned_by: string
+          id: string
+          job_id: string
+          technician_id: string
+          unassigned_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_service_request: {
+        Args: {
+          p_description: string
+          p_priority: string
+          p_request_id: string
+          p_title: string
+        }
+        Returns: {
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          organization_id: string
+          priority: Database["public"]["Enums"]["request_priority"]
+          site_id: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "service_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+    }
+    Enums: {
+      app_role: "customer" | "dispatcher" | "technician" | "admin"
+      invoice_status: "draft" | "issued" | "paid" | "void"
+      job_status:
+        | "requested"
+        | "assigned"
+        | "in_progress"
+        | "completed"
+        | "awaiting_signoff"
+        | "signed_off"
+        | "invoiced"
+        | "cancelled"
+      membership_status: "active" | "inactive"
+      request_priority: "low" | "normal" | "high" | "urgent"
+      request_status:
+        | "submitted"
+        | "accepted"
+        | "scheduled"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+      user_status: "active" | "inactive"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["customer", "dispatcher", "technician", "admin"],
+      invoice_status: ["draft", "issued", "paid", "void"],
+      job_status: [
+        "requested",
+        "assigned",
+        "in_progress",
+        "completed",
+        "awaiting_signoff",
+        "signed_off",
+        "invoiced",
+        "cancelled",
+      ],
+      membership_status: ["active", "inactive"],
+      request_priority: ["low", "normal", "high", "urgent"],
+      request_status: [
+        "submitted",
+        "accepted",
+        "scheduled",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
+      user_status: ["active", "inactive"],
+    },
+  },
+} as const
