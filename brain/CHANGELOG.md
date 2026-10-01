@@ -1,16 +1,19 @@
 # FieldOps — Changelog
 
-All entries describe changes to the project brain or major planned product direction.
-
 ## 2026-10-01
 
-### Added
+### Stage 1 — Supabase database and authentication
 
-- Created the `brain/` documentation set for FieldOps.
-- Documented the core request → dispatch → technician → evidence → sign-off → invoice/report workflow.
-- Added proposed product requirements, architecture, stack, repository structure, data model, API contract, UI specification, evaluation plan, testing strategy, security baseline, decisions, roadmap, coding rules, and agent instructions.
-- Explicitly marked implementation-specific details as proposed where the original project direction did not define them.
+- Created the FieldOps Supabase schema for organizations, profiles, memberships, customers, sites, service requests, jobs, assignments, work logs, attachments, part usage, sign-offs, invoices, invoice lines, and audit events.
+- Added PostgreSQL enums, foreign keys, composite organization integrity constraints, timestamps, checks, and indexes.
+- Added the one-active-technician-assignment invariant.
+- Enabled RLS across all 15 public application tables.
+- Added role/resource-scoped RLS policies and private authorization helper functions.
+- Added the Auth user creation trigger that provisions a profile.
+- Added Supabase SSR authentication utilities, login/signup, email confirmation callback, session refresh, and protected dashboard.
+- Verified Supabase security advisors with no security lints.
+- Verified the Stage 1 table/RLS/policy/auth-trigger/index checks against the live project.
 
-## Change policy
+### Stage 0 — Foundation
 
-Update this file when a material product or architecture decision changes. Keep entries concise and link the deeper decision document when useful.
+- Created the Next.js/TypeScript/Tailwind/Vitest foundation and CI workflow.
