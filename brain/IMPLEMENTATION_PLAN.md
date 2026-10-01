@@ -2,20 +2,6 @@
 
 This plan converts the FieldOps brain into an executable build sequence. Supabase is the managed backend platform for the production system of record; Vercel is the deployment/runtime platform for the web application and API.
 
-## Stage 1 status
-
-**Completed on 2026-10-01:** live Supabase schema, RLS, role model, Auth profile provisioning, and Next.js SSR authentication are implemented and verified.
-
-Verified against Supabase project `vezjdmgatlhxktbrsvwm`:
-- 15 application tables.
-- RLS enabled on all 15.
-- 30 RLS policies.
-- Auth user → profile trigger.
-- One-active-assignment unique index.
-- Security advisor: no security lints.
-
-The Vercel environment/deployment gate remains pending because the connected Vercel account currently exposes no team/project through the available Vercel connector. Do not treat Stage 1 as fully deployment-complete until the Vercel project is connected and its preview/production Supabase environment variables are verified.
-
 ## Infrastructure anchors
 
 - GitHub repository: `aarushichaurasiya/FieldOps`
@@ -23,18 +9,29 @@ The Vercel environment/deployment gate remains pending because the connected Ver
 - Supabase project ref: `vezjdmgatlhxktbrsvwm`
 - Supabase region: `ap-northeast-1`
 - PostgreSQL: 17
-- Vercel: deployment/runtime platform; project mapping must be confirmed.
+- Vercel: connected deployment platform; exact Vercel project/team mapping must be confirmed before the first deployment.
 - Environments: local/development, preview/staging, production.
 
 ## Stage 0 — Repository and delivery foundation
 
-See repository history for the completed foundation.
+**Status: completed.**
+
+Implemented:
+- Next.js + TypeScript application skeleton.
+- Tailwind and accessible component foundation.
+- Strict TypeScript, ESLint, test harness.
+- Environment contract.
+- Health endpoint.
+- CI checks: install, lint, typecheck, unit tests, production build.
 
 ## Stage 1 — Supabase database and authentication
 
-### Database
+**Status: database/auth implementation completed; Vercel deployment gate pending.**
 
-Implemented:
+**Goal:** establish the secure system of record.
+
+### Database implemented
+
 - User/profile
 - Organization and organization membership
 - Customer
@@ -48,36 +45,286 @@ Implemented:
 - SignOff
 - Invoice and invoice lines
 - AuditEvent
-- Foreign keys, checks, timestamps, indexes
-- One active assignment per job
+- Foreign keys and organization integrity constraints
+- Job status enum and timestamp/check constraints
+- One-active-technician-assignment invariant
+- Operational indexes
 
-### Security
+### Security implemented
 
-Implemented:
-- RLS on every public application table.
-- Role/resource-scoped policies.
+- RLS enabled on every public application table.
+- Role + resource scoped policies.
 - Private authorization helper functions.
-- Auth user profile provisioning trigger.
-- No authorization based on editable user metadata.
-- Client access excludes service-role/secret credentials.
+- Auth user → profile provisioning trigger.
+- Authorization does not rely on editable user metadata.
+- Client grants exclude service-role/secret credentials.
+- Security advisor verified with no security lints.
 
-### Next.js authentication
+### Next.js authentication implemented
 
-Implemented:
 - `@supabase/ssr` browser/server clients.
 - Next.js proxy session refresh using `auth.getClaims()`.
 - Email/password sign-in and sign-up.
 - Email confirmation callback.
 - Protected dashboard using server-side user verification.
-- Environment contract for Supabase URL and publishable key.
+- Supabase URL + publishable-key environment contract.
+
+### Verification
+
+- 15 application tables verified.
+- RLS enabled on 15/15 application tables.
+- 30 RLS policies verified.
+- Auth profile trigger verified.
+- Active-assignment unique index verified.
+- Supabase security advisor returned no security lints.
+- Performance advisor currently reports only INFO-level unused-index notices because the database has no production workload yet.
 
 ### Remaining Stage 1 deployment gate
 
-- Configure Supabase URL + publishable key in Vercel preview and production environments.
-- Configure Auth redirect URLs for each deployed environment.
-- Verify a preview deployment can sign up, confirm email, sign in, and load `/dashboard`.
+- Connect/identify the FieldOps Vercel project.
+- Configure Supabase URL and publishable key in Vercel preview and production environments.
+- Configure Supabase Auth redirect URLs for each deployed environment.
+- Verify preview sign-up, email confirmation, sign-in, and `/dashboard`.
+- Keep service-role/secret keys server-only.
+
+**Exit gate:** authenticated users can be identified and authorized; database constraints and RLS prevent cross-user/resource access; preview deployment proves the auth flow.
 
 ## Stage 2 — Customer request intake
 
-Next implementation stage after the Vercel Stage 1 deployment gate passes.
+**Goal:** complete the first business action.
 
+Implement:
+- Customer dashboard.
+- Create service request form.
+- Request validation.
+- Request detail page.
+- Request list/status display.
+- Server-side creation and audit event.
+
+API:
+- `POST /api/v1/requests`
+- `GET /api/v1/requests`
+- `GET /api/v1/requests/:id`
+- `PATCH /api/v1/requests/:id`
+
+Supabase:
+- Persist requests transactionally.
+- Enforce customer ownership with RLS.
+- Add indexes for customer/status/date.
+
+Vercel:
+- Deploy preview and validate the request flow against preview Supabase data.
+
+**Exit gate:** customer creates a request and can only see authorized requests.
+
+## Stage 3 — Dispatcher operations and assignment
+
+**Goal:** turn incoming requests into scheduled/assigned jobs.
+
+Implement:
+- Dispatcher dashboard.
+- Request queue and filters.
+- Request → Job creation/association.
+- Technician list.
+- Assignment/unassignment.
+- Job status lifecycle enforcement.
+- Audit events for assignment changes.
+
+API:
+- `GET /api/v1/dispatch/queue`
+- `POST /api/v1/jobs/:id/assignments`
+- `DELETE /api/v1/jobs/:id/assignments/:assignmentId`
+
+Supabase:
+- Transactional assignment mutation.
+- Constraint against multiple active technician assignments.
+- RLS for dispatcher/admin operations.
+
+**Exit gate:** dispatcher can reliably assign a job and the technician sees the assignment.
+
+## Stage 4 — Technician execution
+
+**Goal:** make the core workflow usable from a phone.
+
+Implement:
+- Mobile-first technician job screen.
+- Start job.
+- Work notes/logs.
+- Completion checklist.
+- Parts/material recording.
+- Job completion.
+- Loading, offline/error, retry and success states.
+
+API:
+- `POST /api/v1/jobs/:id/start`
+- `POST /api/v1/jobs/:id/work-logs`
+- `POST /api/v1/jobs/:id/parts`
+- `POST /api/v1/jobs/:id/complete`
+
+Supabase:
+- Enforce technician assignment/resource authorization.
+- Use transactions for state transitions.
+- Store operational records and audit events.
+
+**Exit gate:** an assigned technician can start, record work/parts, and complete a real job.
+
+## Stage 5 — Evidence and private Storage
+
+**Goal:** make completed work verifiable.
+
+Implement:
+- Photo/document capture UI.
+- Upload progress and retry.
+- Attachment metadata.
+- Secure preview/download.
+- File type/size validation.
+- Two-step upload finalization.
+
+Supabase:
+- Private Storage bucket(s) for job evidence and generated documents.
+- Storage policies tied to job/resource authorization.
+- Database metadata linked to Storage object keys.
+- Short-lived signed URLs.
+- Unauthorized-user upload/download tests.
+
+API:
+- `POST /api/v1/jobs/:id/attachments/presign`
+- `POST /api/v1/jobs/:id/attachments/complete`
+
+**Exit gate:** technician can securely upload/view evidence; another customer/technician cannot access it.
+
+## Stage 6 — Customer sign-off and audit trail
+
+**Goal:** establish explicit customer approval.
+
+Implement:
+- Customer completion review.
+- Job summary/evidence view.
+- Digital sign-off.
+- Confirmation screen.
+- Immutable audit timeline.
+
+API:
+- `POST /api/v1/jobs/:id/sign-off`
+
+Supabase:
+- Transactionally create sign-off + final audit event.
+- Enforce one valid sign-off per job unless an explicit correction workflow is added.
+- Protect signature references and customer data.
+
+**Exit gate:** completed work has verifiable customer approval evidence.
+
+## Stage 7 — Billing and reporting
+
+**Goal:** produce the business artifact from the completed job.
+
+Implement:
+- Server-derived invoice calculation.
+- Invoice status lifecycle.
+- Invoice/report generation.
+- Download/view document.
+- Job completion report.
+- Billing audit events.
+
+API:
+- `POST /api/v1/jobs/:id/invoice`
+- `GET /api/v1/jobs/:id/report`
+
+Supabase:
+- Persist invoice/line-item source data.
+- Store generated documents in private Storage.
+- Make invoice generation idempotent.
+- Never trust client-provided totals.
+
+Vercel:
+- Run generation in an appropriate runtime.
+- Keep generation secrets server-side.
+- Add failure/retry handling.
+
+**Exit gate:** a signed-off job produces a consistent invoice/report that can be retrieved securely.
+
+## Stage 8 — End-to-end hardening
+
+**Goal:** prove the whole system works, not just individual screens.
+
+Testing:
+- Unit tests for domain rules.
+- Integration tests against isolated Supabase database.
+- Playwright E2E for the full lifecycle.
+- Negative authorization tests.
+- Duplicate/retry/idempotency tests.
+- Upload failure tests.
+- Invoice calculation tests.
+
+Supabase:
+- Security advisors.
+- RLS policy review.
+- Query/index/performance review.
+- Backup/recovery verification.
+- Logs review for database/API failures.
+
+Vercel:
+- Production build verification.
+- Preview-to-production promotion workflow.
+- Runtime error monitoring.
+- Deployment rollback procedure.
+- Environment-variable audit.
+- Performance review.
+
+**Exit gate:** full demo workflow passes from customer request through invoice/report with no known critical security or correctness issue.
+
+## Stage 9 — Production release
+
+**Goal:** launch a stable production version.
+
+Production checklist:
+- Custom production domain.
+- HTTPS.
+- Production Supabase configuration.
+- Production secrets.
+- Database migration procedure.
+- Storage policies.
+- Auth redirect configuration.
+- Error monitoring.
+- Structured logs.
+- Backup/recovery runbook.
+- CI required checks.
+- Deployment rollback plan.
+- README/runbook updated.
+
+**Release scenario:**
+
+Customer request → dispatcher assignment → technician execution → notes/photos/parts → completion → customer sign-off → invoice/report → audit review.
+
+## Stage 10 — Post-MVP enhancements
+
+Only after the core lifecycle is stable:
+- Scheduling/calendar.
+- Route optimization.
+- Recurring maintenance.
+- Inventory.
+- Notifications.
+- Offline-first technician mode.
+- Customer communications.
+- Third-party integrations.
+- Analytics.
+
+## Definition of done
+
+FieldOps is considered MVP-complete only when:
+
+1. The complete business lifecycle works end-to-end.
+2. Every protected resource has server-side authorization.
+3. Supabase RLS and Storage policies are verified.
+4. Critical mutations are transactional/idempotent where needed.
+5. Evidence and generated documents are private and securely accessible.
+6. Invoice totals are server-derived.
+7. Audit history exists for critical actions.
+8. Unit/integration/E2E critical-path tests pass.
+9. Vercel preview and production deployments are reproducible.
+10. Production secrets are separated from development/preview.
+11. The system can be demonstrated from one realistic job without manual database intervention.
+
+## Implementation rule
+
+Build strictly in stage order unless a dependency requires otherwise. Do not add later-stage features before the current stage's exit gate passes. Keep FieldOps independent from EventApp and other projects.
