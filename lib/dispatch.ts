@@ -3,14 +3,18 @@ import type { Tables } from "@/lib/database.types";
 
 type Job = Tables<"jobs">;
 type Assignment = Tables<"assignments">;
-type Profile = Tables<"profiles">;
-
-type DispatchRequest = Tables<"service_requests"> & {
+type DispatchRequest = Pick<
+  Tables<"service_requests">,
+  "id" | "organization_id" | "customer_id" | "site_id" | "title" | "description" | "priority" | "status" | "created_at" | "updated_at"
+> & {
   customers: Pick<Tables<"customers">, "id" | "name" | "email" | "phone"> | null;
   sites: Pick<Tables<"sites">, "id" | "name" | "address_line1" | "city" | "state" | "postal_code"> | null;
 };
 
-export type DispatchJob = Job & {
+export type DispatchJob = Pick<
+  Job,
+  "id" | "organization_id" | "request_id" | "status" | "scheduled_start" | "scheduled_end" | "started_at" | "completed_at" | "completion_notes" | "created_at" | "updated_at"
+> & {
   service_requests: DispatchRequest | null;
 };
 
@@ -57,7 +61,7 @@ export async function listDispatchQueue(filters: {
   let query = context.supabase
     .from("service_requests")
     .select(
-      "id,organization_id,customer_id,site_id,title,description,priority,status,created_at,updated_at,customers(id,name,email),sites(id,name,city,state)",
+      "id,organization_id,customer_id,site_id,title,description,priority,status,created_at,updated_at,customers!service_requests_customer_id_fkey(id,name,email),sites!service_requests_site_id_fkey(id,name,city,state)",
     )
     .in("organization_id", context.organizationIds)
     .neq("status", "cancelled")
@@ -163,7 +167,7 @@ export async function listAvailableTechnicians() {
 
   return {
     authorized: true as const,
-    technicians: (profiles ?? []).map((profile: Profile) => ({
+    technicians: (profiles ?? []).map((profile) => ({
       ...profile,
       activeJobCount: workload.get(profile.id) ?? 0,
     })),
@@ -222,6 +226,7 @@ export async function createJobForRequest(requestId: string) {
     .overrideTypes<Job>();
 
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("JOB_CREATION_FAILED");
   return data;
 }
 
