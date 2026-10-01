@@ -2,8 +2,29 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createCustomerRequest, updateCustomerRequest } from "@/lib/requests";
+import { createCustomerRequest, provisionCustomerWorkspace, updateCustomerRequest } from "@/lib/requests";
 import { serviceRequestSchema, serviceRequestUpdateSchema } from "@/lib/validation/service-request";
+
+export async function provisionWorkspace() {
+  try {
+    await provisionCustomerWorkspace();
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message === "AUTH_REQUIRED"
+        ? "Please sign in before provisioning a workspace."
+        : error instanceof Error && error.message === "CUSTOMER_PROVISIONING_REQUIRES_ADMIN"
+          ? "This account already has an organization membership. Customer provisioning must be completed by an administrator."
+          : error instanceof Error
+            ? error.message
+            : "Unable to provision the customer workspace.";
+
+    redirect(`/requests?error=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/requests");
+  redirect("/requests");
+}
 
 export async function createRequest(formData: FormData) {
   const parsed = serviceRequestSchema.safeParse({
