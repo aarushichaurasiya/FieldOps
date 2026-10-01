@@ -70,35 +70,16 @@ export async function createCustomerRequest(input: ServiceRequestInput) {
   if (!customer) throw new Error("CUSTOMER_PROFILE_REQUIRED");
 
   const { data, error } = await supabase
-    .from("service_requests")
-    .insert({
-      organization_id: customer.organization_id,
-      customer_id: customer.id,
-      site_id: input.site_id || null,
-      title: input.title,
-      description: input.description || null,
-      priority: input.priority,
+    .rpc("create_service_request", {
+      p_customer_id: customer.id,
+      p_site_id: input.site_id || null,
+      p_title: input.title,
+      p_description: input.description || null,
+      p_priority: input.priority,
     })
-    .select(requestColumns)
     .single();
 
   if (error) throw new Error(error.message);
-
-  const { error: auditError } = await supabase
-    .from("audit_events")
-    .insert({
-      organization_id: customer.organization_id,
-      actor_id: user.id,
-      entity_type: "service_request",
-      entity_id: data.id,
-      action: "request.created",
-      metadata: { priority: data.priority },
-    });
-
-  if (auditError) {
-    console.error("Service request audit write failed:", auditError);
-  }
-
   return data;
 }
 
@@ -112,33 +93,14 @@ export async function updateCustomerRequest(
   if (!customer) throw new Error("CUSTOMER_PROFILE_REQUIRED");
 
   const { data, error } = await supabase
-    .from("service_requests")
-    .update({
-      title: input.title,
-      description: input.description || null,
-      priority: input.priority,
+    .rpc("update_service_request", {
+      p_request_id: id,
+      p_title: input.title,
+      p_description: input.description || null,
+      p_priority: input.priority,
     })
-    .eq("id", id)
-    .eq("customer_id", customer.id)
-    .select(requestColumns)
     .single();
 
   if (error) throw new Error(error.message);
-
-  const { error: auditError } = await supabase
-    .from("audit_events")
-    .insert({
-      organization_id: customer.organization_id,
-      actor_id: user.id,
-      entity_type: "service_request",
-      entity_id: data.id,
-      action: "request.updated",
-      metadata: { priority: data.priority },
-    });
-
-  if (auditError) {
-    console.error("Service request audit write failed:", auditError);
-  }
-
   return data;
 }
