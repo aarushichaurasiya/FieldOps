@@ -20,6 +20,20 @@ export async function getCurrentCustomer() {
   return { supabase, user, customer };
 }
 
+export async function provisionCustomerWorkspace() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("AUTH_REQUIRED");
+
+  const { data, error } = await supabase
+    .rpc("provision_customer_workspace")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function listCustomerRequests() {
   const { supabase, user, customer } = await getCurrentCustomer();
   if (!user || !customer) return [];
