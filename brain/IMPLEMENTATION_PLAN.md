@@ -9,7 +9,7 @@ This plan converts the FieldOps brain into an executable build sequence. Supabas
 - Supabase project ref: `vezjdmgatlhxktbrsvwm`
 - Supabase region: `ap-northeast-1`
 - PostgreSQL: 17
-- Vercel: connected deployment platform; exact Vercel project/team mapping must be confirmed before the first deployment.
+- Vercel: connected deployment platform; current deployment URL is `https://fieldops-7oqgxy6hv-aarushiinplace-9284.vercel.app`.
 - Environments: local/development, preview/staging, production.
 
 ## Stage 0 — Repository and delivery foundation
