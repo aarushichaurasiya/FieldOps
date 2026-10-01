@@ -94,7 +94,12 @@ export async function createCustomerRequest(input: ServiceRequestInput) {
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+
+  if (!data || typeof data !== "object" || !("id" in data) || typeof data.id !== "string") {
+    throw new Error("Service request creation did not return a valid request ID.");
+  }
+
+  return { id: data.id };
 }
 
 export async function updateCustomerRequest(
