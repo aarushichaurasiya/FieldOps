@@ -48,6 +48,19 @@ export default async function DashboardPage() {
           </section>
         </div>
 
+        {memberships?.some((membership) => membership.role === "dispatcher" || membership.role === "admin") ? (
+          <section className="mt-6 rounded-3xl border border-violet-100 bg-white p-7 shadow-sm">
+            <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-violet-700">Stage 3</p>
+                <h2 className="mt-2 text-2xl font-semibold">Dispatcher operations</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Review incoming requests, create operational jobs, and assign active technicians through the protected dispatch workflow.</p>
+              </div>
+              <Link href="/dispatch" className="shrink-0 rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Open dispatch</Link>
+            </div>
+          </section>
+        ) : null}
+
         <section className="gradient-surface mt-6 rounded-3xl p-7 text-white shadow-xl shadow-indigo-950/10">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
             <div>
