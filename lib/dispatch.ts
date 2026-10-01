@@ -5,6 +5,15 @@ type Job = Tables<"jobs">;
 type Assignment = Tables<"assignments">;
 type Profile = Tables<"profiles">;
 
+type DispatchRequest = Tables<"service_requests"> & {
+  customers: Pick<Tables<"customers">, "id" | "name" | "email" | "phone"> | null;
+  sites: Pick<Tables<"sites">, "id" | "name" | "address_line1" | "city" | "state" | "postal_code"> | null;
+};
+
+export type DispatchJob = Job & {
+  service_requests: DispatchRequest | null;
+};
+
 export type DispatcherContext = {
   supabase: Awaited<ReturnType<typeof createClient>>;
   user: { id: string; email?: string };
@@ -195,7 +204,7 @@ export async function getDispatchJob(jobId: string) {
 
   return {
     authorized: true as const,
-    job: job as Job & { service_requests: unknown },
+    job: job as DispatchJob,
     assignments: (assignments ?? []).map((assignment: Assignment) => ({
       ...assignment,
       technician: profileById.get(assignment.technician_id) ?? null,
