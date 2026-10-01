@@ -24,6 +24,15 @@ The live project is the verified source of the current database state. Before lo
 - Private authorization helpers live in the non-exposed `private` schema.
 - No service-role/secret key belongs in browser code.
 
+## Stage 2 request intake
+
+- `service_requests` remains the system-of-record table; no mock request store was added.
+- Customer request create/update uses `security invoker` PostgreSQL functions so RLS still evaluates the caller's session.
+- Request + audit-event writes occur in the same database transaction.
+- Customer site reads are restricted to sites owned by the authenticated customer.
+- Customer request updates cannot change organization, customer, site, or workflow status.
+- Live Stage 2 SQL was verified after deployment; the reproducible migration is `supabase/migrations/20261001115000_stage_2_request_intake.sql`.
+
 ## Authentication
 
 The Next.js application uses `@supabase/ssr` with:
