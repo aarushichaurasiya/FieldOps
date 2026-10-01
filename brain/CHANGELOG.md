@@ -1,5 +1,12 @@
 # FieldOps — Changelog
 
+## 2026-10-01 — Stage 3 real test flow
+
+- Added an idempotent local-only fixture setup script for real Supabase Auth dispatcher, technician, and customer accounts.
+- Added realistic customer/site/service-request records for Stage 3 validation.
+- Added a documented dispatcher → job → technician assignment → unassignment → reassignment exit flow.
+- Kept the Supabase secret key outside application runtime and source-controlled configuration.
+
 ## 2026-10-01 — Stage 3 dispatcher operations
 
 - Added the dispatcher operations workspace at `/dispatch`.

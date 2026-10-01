@@ -63,3 +63,10 @@ Configure the Supabase Auth email redirect URL for each environment as:
 `<APP_URL>/auth/callback`
 
 Use the project's publishable key as `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Never use a service-role/secret key in `NEXT_PUBLIC_*` variables.
+
+## Stage 3 real test fixture
+
+- `scripts/stage3-test-data.mjs` creates disposable `.test` Auth users and a realistic Stage 3 organization/request fixture.
+- The fixture uses a local Supabase secret key only for setup; the secret key is never part of the application runtime or browser environment.
+- Run `npm run test:stage3:setup` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `STAGE3_TEST_PASSWORD`.
+- Detailed dispatcher/technician exit steps are in `docs/STAGE_3_TEST_FLOW.md`.

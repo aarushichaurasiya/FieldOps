@@ -126,7 +126,7 @@ Vercel:
 
 ## Stage 3 — Dispatcher operations and assignment
 
-**Status: implementation built; production exit verification pending.**
+**Status: implementation built; real test fixture prepared; production exit verification pending.**
 
 **Goal:** turn incoming requests into scheduled/assigned jobs.
 
