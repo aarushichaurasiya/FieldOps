@@ -1,5 +1,17 @@
 # FieldOps — Changelog
 
+## 2026-10-01 — Stage 2 request intake
+
+- Added the White Lilac `#F8F8F9` + Dark Blue `#111439` visual system with gradient accents.
+- Added customer request list, creation, detail, and update screens.
+- Added Zod boundary validation and `/api/v1/requests` route handlers.
+- Added RLS-aware PostgreSQL functions for transactional request + audit-event mutations.
+- Tightened customer site SELECT visibility to customer-owned sites.
+- Added a database trigger preventing customer ownership/status mutation and keeping workflow status server-controlled.
+- Added a Stage 2 migration record and RLS contract test notes.
+- No mock customer, organization, or service-request data was added.
+
+
 ## 2026-10-01
 
 ### Stage 1 — Supabase database and authentication
