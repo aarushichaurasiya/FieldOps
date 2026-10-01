@@ -18,10 +18,10 @@ export async function createRequest(formData: FormData) {
     redirect(`/requests/new?error=${encodeURIComponent(message)}`);
   }
 
+  let request: Awaited<ReturnType<typeof createCustomerRequest>>;
+
   try {
-    const request = await createCustomerRequest(parsed.data);
-    revalidatePath("/requests");
-    redirect(`/requests/${request.id}`);
+    request = await createCustomerRequest(parsed.data);
   } catch (error) {
     const message =
       error instanceof Error && error.message === "CUSTOMER_PROFILE_REQUIRED"
@@ -34,6 +34,9 @@ export async function createRequest(formData: FormData) {
 
     redirect(`/requests/new?error=${encodeURIComponent(message)}`);
   }
+
+  revalidatePath("/requests");
+  redirect(`/requests/${request.id}`);
 }
 
 export async function updateRequest(formData: FormData) {
@@ -52,9 +55,6 @@ export async function updateRequest(formData: FormData) {
 
   try {
     await updateCustomerRequest(id, parsed.data);
-    revalidatePath("/requests");
-    revalidatePath(`/requests/${id}`);
-    redirect(`/requests/${id}?saved=1`);
   } catch (error) {
     const message =
       error instanceof Error && error.message === "CUSTOMER_PROFILE_REQUIRED"
@@ -65,4 +65,8 @@ export async function updateRequest(formData: FormData) {
 
     redirect(`/requests/${encodeURIComponent(id)}?error=${encodeURIComponent(message)}`);
   }
+
+  revalidatePath("/requests");
+  revalidatePath(`/requests/${id}`);
+  redirect(`/requests/${id}?saved=1`);
 }
