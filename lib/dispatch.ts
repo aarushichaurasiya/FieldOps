@@ -3,12 +3,15 @@ import type { Tables } from "@/lib/database.types";
 
 type Job = Tables<"jobs">;
 type Assignment = Tables<"assignments">;
+type Customer = Tables<"customers">;
+type Site = Tables<"sites">;
+
 type DispatchRequest = Pick<
   Tables<"service_requests">,
   "id" | "organization_id" | "customer_id" | "site_id" | "title" | "description" | "priority" | "status" | "created_at" | "updated_at"
 > & {
-  customers: Pick<Tables<"customers">, "id" | "name" | "email" | "phone"> | null;
-  sites: Pick<Tables<"sites">, "id" | "name" | "address_line1" | "city" | "state" | "postal_code"> | null;
+  customers: Pick<Customer, "id" | "name" | "email" | "phone"> | null;
+  sites: Pick<Site, "id" | "name" | "address_line1" | "city" | "state" | "postal_code"> | null;
 };
 
 export type DispatchJob = Pick<
@@ -40,14 +43,41 @@ export async function getDispatcherContext(): Promise<DispatcherContext | null> 
   if (error) throw new Error(error.message);
   if (!memberships?.length) return null;
 
-  const adminMembership = memberships.find((membership) => membership.role === "admin");
-
   return {
     supabase,
     user: { id: user.id, email: user.email },
     organizationIds: memberships.map((membership) => membership.organization_id),
-    role: adminMembership ? "admin" : "dispatcher",
+    role: memberships.some((membership) => membership.role === "admin") ? "admin" : "dispatcher",
   };
+}
+
+async function loadRequestContext(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  requests: DispatchRequest[],
+) {
+  const customerIds = [...new Set(requests.map((request) => request.customer_id))];
+  const siteIds = [...new Set(requests.flatMap((request) => request.site_id ? [request.site_id] : []))];
+
+  const [customersResult, sitesResult] = await Promise.all([
+    customerIds.length
+      ? supabase.from("customers").select("id,name,email,phone").in("id", customerIds)
+      : Promise.resolve({ data: [], error: null }),
+    siteIds.length
+      ? supabase.from("sites").select("id,name,address_line1,city,state,postal_code").in("id", siteIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (customersResult.error) throw new Error(customersResult.error.message);
+  if (sitesResult.error) throw new Error(sitesResult.error.message);
+
+  const customersById = new Map((customersResult.data ?? []).map((customer) => [customer.id, customer]));
+  const sitesById = new Map((sitesResult.data ?? []).map((site) => [site.id, site]));
+
+  return requests.map((request) => ({
+    ...request,
+    customers: customersById.get(request.customer_id) ?? null,
+    sites: request.site_id ? sitesById.get(request.site_id) ?? null : null,
+  }));
 }
 
 export async function listDispatchQueue(filters: {
@@ -60,30 +90,23 @@ export async function listDispatchQueue(filters: {
 
   let query = context.supabase
     .from("service_requests")
-    .select(
-      "id,organization_id,customer_id,site_id,title,description,priority,status,created_at,updated_at,customers!service_requests_customer_id_fkey(id,name,email),sites!service_requests_site_id_fkey(id,name,city,state)",
-    )
+    .select("id,organization_id,customer_id,site_id,title,description,priority,status,created_at,updated_at")
     .in("organization_id", context.organizationIds)
     .neq("status", "cancelled")
     .order("created_at", { ascending: false });
 
-  if (filters.status && filters.status !== "all") {
-    query = query.eq("status", filters.status);
-  }
-
-  if (filters.priority && filters.priority !== "all") {
-    query = query.eq("priority", filters.priority);
-  }
-
-  if (filters.search) {
-    query = query.ilike("title", `%${filters.search}%`);
-  }
+  if (filters.status && filters.status !== "all") query = query.eq("status", filters.status);
+  if (filters.priority && filters.priority !== "all") query = query.eq("priority", filters.priority);
+  if (filters.search) query = query.ilike("title", `%${filters.search}%`);
 
   const { data: requests, error } = await query;
   if (error) throw new Error(error.message);
 
-  const requestIds = (requests ?? []).map((request) => request.id);
-  if (!requestIds.length) return { authorized: true as const, items: [] };
+  const rawRequests = (requests ?? []) as DispatchRequest[];
+  if (!rawRequests.length) return { authorized: true as const, items: [] };
+
+  const requestContext = await loadRequestContext(context.supabase, rawRequests);
+  const requestIds = rawRequests.map((request) => request.id);
 
   const { data: jobs, error: jobsError } = await context.supabase
     .from("jobs")
@@ -113,12 +136,15 @@ export async function listDispatchQueue(filters: {
   const jobByRequest = new Map((jobs ?? []).map((job) => [job.request_id, job]));
   const assignmentByJob = new Map((assignments ?? []).map((assignment) => [assignment.job_id, assignment]));
   const profileById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+  const requestById = new Map(requestContext.map((request) => [request.id, request]));
 
   return {
     authorized: true as const,
-    items: (requests ?? []).map((request) => {
+    items: rawRequests.map((rawRequest) => {
+      const request = requestById.get(rawRequest.id) ?? rawRequest;
       const job = jobByRequest.get(request.id) ?? null;
       const assignment = job ? assignmentByJob.get(job.id) ?? null : null;
+
       return {
         request,
         job,
@@ -180,14 +206,24 @@ export async function getDispatchJob(jobId: string) {
 
   const { data: job, error } = await context.supabase
     .from("jobs")
-    .select(
-      "id,organization_id,request_id,status,scheduled_start,scheduled_end,started_at,completed_at,completion_notes,created_at,updated_at,service_requests(id,title,description,priority,status,customer_id,site_id,customers(id,name,email,phone),sites(id,name,address_line1,city,state,postal_code))",
-    )
+    .select("id,organization_id,request_id,status,scheduled_start,scheduled_end,started_at,completed_at,completion_notes,created_at,updated_at")
     .eq("id", jobId)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!job) return { authorized: true as const, job: null, assignments: [] };
+
+  const { data: request, error: requestError } = await context.supabase
+    .from("service_requests")
+    .select("id,organization_id,customer_id,site_id,title,description,priority,status,created_at,updated_at")
+    .eq("id", job.request_id)
+    .maybeSingle();
+
+  if (requestError) throw new Error(requestError.message);
+
+  const requestContext = request
+    ? (await loadRequestContext(context.supabase, [request as DispatchRequest]))[0]
+    : null;
 
   const { data: assignments, error: assignmentError } = await context.supabase
     .from("assignments")
@@ -208,7 +244,10 @@ export async function getDispatchJob(jobId: string) {
 
   return {
     authorized: true as const,
-    job: job as DispatchJob,
+    job: {
+      ...job,
+      service_requests: requestContext ?? null,
+    } as DispatchJob,
     assignments: (assignments ?? []).map((assignment: Assignment) => ({
       ...assignment,
       technician: profileById.get(assignment.technician_id) ?? null,
@@ -235,14 +274,12 @@ export async function assignJob(jobId: string, technicianId: string) {
   if (!context) throw new Error("DISPATCHER_REQUIRED");
 
   const { data, error } = await context.supabase
-    .rpc("assign_job", {
-      p_job_id: jobId,
-      p_technician_id: technicianId,
-    })
+    .rpc("assign_job", { p_job_id: jobId, p_technician_id: technicianId })
     .single()
     .overrideTypes<Assignment>();
 
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("ASSIGNMENT_FAILED");
   return data;
 }
 
@@ -251,13 +288,11 @@ export async function unassignJob(jobId: string, assignmentId: string) {
   if (!context) throw new Error("DISPATCHER_REQUIRED");
 
   const { data, error } = await context.supabase
-    .rpc("unassign_job", {
-      p_job_id: jobId,
-      p_assignment_id: assignmentId,
-    })
+    .rpc("unassign_job", { p_job_id: jobId, p_assignment_id: assignmentId })
     .single()
     .overrideTypes<Assignment>();
 
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("UNASSIGNMENT_FAILED");
   return data;
 }
