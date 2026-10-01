@@ -57,7 +57,7 @@ export async function assignJobAction(formData: FormData) {
   }
 
   try {
-    const assignment = await assignJob(parsed.data.job_id, parsed.data.technician_id);
+    await assignJob(parsed.data.job_id, parsed.data.technician_id);
     revalidatePath("/dispatch");
     revalidatePath(`/dispatch/jobs/${parsed.data.job_id}`);
     redirect(`/dispatch/jobs/${parsed.data.job_id}?saved=assigned`);
