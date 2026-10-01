@@ -91,7 +91,7 @@ Implemented:
 
 ## Stage 2 — Customer request intake
 
-**Status: implementation in progress; provisioning + deployed end-to-end verification remain.**
+**Status: implementation in progress; deployed end-to-end verification remains.**
 
 **Goal:** complete the first business action.
 
@@ -120,6 +120,7 @@ Supabase:
 Vercel:
 - Deploy preview/production and validate the request flow with a provisioned customer account.
 - Do not seed placeholder customer/organization rows just to make the UI appear populated.
+- First-time authenticated users can provision their own real customer workspace through the constrained onboarding function.
 
 **Exit gate:** provisioned customer creates a real request, sees only authorized requests, and the request/audit write is atomic.
 
