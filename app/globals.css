@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --color-lilac: #F8F8F9;
+  --color-ink: #111439;
+  --color-blue: #111439;
+  --color-accent: #635BFF;
+  --color-cyan: #00B8D9;
+  --color-violet: #8B5CF6;
 }
 
 html,
@@ -11,5 +17,38 @@ body {
 
 body {
   margin: 0;
-  background: #020617;
+  background: var(--color-lilac);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: #dcd9ff;
+  color: var(--color-ink);
+}
+
+.gradient-text {
+  background: linear-gradient(110deg, #635BFF 0%, #8B5CF6 42%, #00B8D9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-surface {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(99, 91, 255, 0.22), transparent 32%),
+    radial-gradient(circle at 82% 18%, rgba(0, 184, 217, 0.2), transparent 30%),
+    linear-gradient(135deg, #111439 0%, #171b4b 52%, #232866 100%);
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(110deg, #635BFF, #8B5CF6, #00B8D9);
 }
