@@ -1,21 +1,24 @@
 # FieldOps Supabase
 
-Stage 1 uses Supabase project `vezjdmgatlhxktbrsvwm`.
+Stage 1+ uses Supabase project `vezjdmgatlhxktbrsvwm`.
 
 ## Live database
 
 - Region: `ap-northeast-1`
 - PostgreSQL: 17
-- Stage 1 migration: `20261001053004_stage_1_core_schema_auth_rls`
-- Stage 1 index migration: `20261001053100_stage_1_fk_indexes`
+- `20261001053004_stage_1_core_schema_auth_rls`
+- `20261001053018_stage_1_fk_indexes`
+- `20261001063316_stage_3_dispatcher_operations`
+- `20261001063339_stage_3_dispatcher_function_security`
 
-The live project is the verified source of the current database state. Before local database work, pull the remote migration/schema with the Supabase CLI and keep the resulting SQL under `supabase/migrations/`.
+Stage 2 request-intake SQL was applied to the live project during implementation and is retained in `supabase/migrations/20261001115000_stage_2_request_intake.sql` for reproducibility. The live migration ledger predates that implementation record, so do not treat the ledger alone as proof that Stage 2 SQL was originally applied.
+
+Before future local database work, pull the remote schema/migration state with the Supabase CLI and reconcile any migration-history drift before applying new migrations.
 
 ## Stage 1 guarantees
 
 - 15 application tables are present.
 - RLS is enabled on all 15 application tables.
-- 30 RLS policies are installed.
 - Auth user creation creates a matching public profile.
 - Organization memberships carry the application role.
 - Cross-organization relationships use composite foreign keys where required.
@@ -27,11 +30,21 @@ The live project is the verified source of the current database state. Before lo
 ## Stage 2 request intake
 
 - `service_requests` remains the system-of-record table; no mock request store was added.
-- Customer request create/update uses `security invoker` PostgreSQL functions so RLS still evaluates the caller's session.
+- Customer request create/update uses security-invoker PostgreSQL functions so RLS still evaluates the caller's session.
 - Request + audit-event writes occur in the same database transaction.
 - Customer site reads are restricted to sites owned by the authenticated customer.
 - Customer request updates cannot change organization, customer, site, or workflow status.
-- Live Stage 2 SQL was verified after deployment; the reproducible migration is `supabase/migrations/20261001115000_stage_2_request_intake.sql`.
+
+## Stage 3 dispatcher operations
+
+- Dispatcher/admin-only job mutation policy.
+- Transactional request → job creation.
+- Transactional technician assignment, reassignment, and unassignment.
+- One active assignment invariant plus immutable assignment history.
+- Job status transition guard.
+- Assignment/job audit events.
+- Technician visibility is limited to active technician memberships in organizations the dispatcher can access.
+- No OpenRouter or AI dependency is used.
 
 ## Authentication
 
@@ -39,6 +52,7 @@ The Next.js application uses `@supabase/ssr` with:
 
 - browser client: `lib/supabase/client.ts`
 - server client: `lib/supabase/server.ts`
+- generated database types: `lib/database.types.ts`
 - session refresh: `lib/supabase/proxy.ts` + root `proxy.ts`
 - sign-in/sign-up: `app/auth/login/page.tsx`
 - email confirmation: `app/auth/callback/route.ts`
