@@ -126,16 +126,21 @@ Vercel:
 
 ## Stage 3 — Dispatcher operations and assignment
 
+**Status: implementation built; production exit verification pending.**
+
 **Goal:** turn incoming requests into scheduled/assigned jobs.
 
-Implement:
-- Dispatcher dashboard.
-- Request queue and filters.
+Implemented:
+- Dispatcher dashboard at `/dispatch`.
+- Request queue with status, priority, and title filters.
 - Request → Job creation/association.
-- Technician list.
-- Assignment/unassignment.
-- Job status lifecycle enforcement.
-- Audit events for assignment changes.
+- Technician pool with active workload counts.
+- Assignment/reassignment/unassignment.
+- Database-enforced job status transition guard.
+- Append-only assignment history guard.
+- Audit events for job creation, assignment, and unassignment.
+- Dispatcher/admin authorization at the database and server layers.
+- Route Handlers for queue, job creation, assignment, and unassignment.
 
 API:
 - `GET /api/v1/dispatch/queue`

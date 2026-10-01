@@ -1,5 +1,20 @@
 # FieldOps — Changelog
 
+## 2026-10-01 — Stage 3 dispatcher operations
+
+- Added the dispatcher operations workspace at `/dispatch`.
+- Added request queue filtering by status, priority, and title.
+- Added request-to-job creation with idempotent association.
+- Added technician pool visibility and active workload counts.
+- Added transactional technician assignment, reassignment, and unassignment.
+- Added assignment history immutability and one-active-assignment enforcement.
+- Added job lifecycle transition enforcement in PostgreSQL.
+- Added audit events for job creation and assignment changes.
+- Added dispatcher/admin-only job mutation policies.
+- Added Stage 3 API route handlers under `/api/v1`.
+- Added generated Supabase database types and typed browser/server clients.
+- Stage 3 does not use OpenRouter or any external AI dependency.
+
 ## 2026-10-01 — Stage 2 request intake
 
 - Added the White Lilac `#F8F8F9` + Dark Blue `#111439` visual system with gradient accents.
@@ -11,7 +26,6 @@
 - Added a Stage 2 migration record and RLS contract test notes.
 - No mock customer, organization, or service-request data was added.
 - Added constrained self-service customer workspace provisioning for authenticated users without an existing membership.
-
 
 ## 2026-10-01
 
