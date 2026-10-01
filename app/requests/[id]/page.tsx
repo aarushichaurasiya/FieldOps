@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { updateRequest } from "../actions";
-import { getCustomerRequest } from "@/lib/requests";
+import { getCurrentCustomer, getCustomerRequest } from "@/lib/requests";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -11,13 +11,12 @@ type Props = {
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
   const query = await searchParams;
-  const request = await getCustomerRequest(id);
+  const { user } = await getCurrentCustomer();
 
-  if (!request) {
-    const { user } = await getCustomerRequest(id).then(() => ({ user: null })).catch(() => ({ user: null }));
-    if (!user) redirect("/auth/login");
-    notFound();
-  }
+  if (!user) redirect("/auth/login");
+
+  const request = await getCustomerRequest(id);
+  if (!request) notFound();
 
   return (
     <main className="min-h-screen bg-[var(--color-lilac)] px-5 py-10 text-[var(--color-ink)] sm:px-8">
@@ -47,7 +46,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
 
           <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
             <h2 className="font-semibold">Edit request</h2>
-            <p className="mt-2 text-xs leading-5 text-slate-500">Customers can edit request details before dispatch workflow takes over. Status and ownership remain server-controlled.</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">Customers can edit request details. Status and ownership remain server-controlled.</p>
             <form action={updateRequest} className="mt-5 space-y-4">
               <input type="hidden" name="id" value={request.id} />
               <label className="block text-sm font-medium"><span className="mb-2 block">Title</span><input name="title" defaultValue={request.title} required className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label>
