@@ -38,6 +38,7 @@ export async function createJobAction(formData: FormData) {
 
   try {
     const job = await createJobForRequest(parsed.data.request_id);
+    if (!job) throw new Error("JOB_CREATION_FAILED");
     revalidatePath("/dispatch");
     revalidatePath(`/dispatch/jobs/${job.id}`);
     redirect(`/dispatch/jobs/${job.id}`);
