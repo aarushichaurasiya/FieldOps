@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCustomerInvoice, getCustomerRequest } from "@/lib/billing";
+import { getCustomerInvoice } from "@/lib/billing";
+import { getCustomerRequest } from "@/lib/requests";
 import { PrintButton } from "@/components/print-button";
 
 function money(cents: number) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(cents / 100); }
