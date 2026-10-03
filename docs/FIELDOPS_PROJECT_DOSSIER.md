@@ -117,7 +117,25 @@ A real production HVAC job was used as the end-to-end validation scenario.
 - Invoice lifecycle: `draft → issued → paid`
 - Service report: printed successfully
 
-## 8. Execution Lessons
+## 8. Visual Evidence
+
+The repository now contains an ordered screenshot set covering the freeze-point workflow. The screenshots are organized by business stage so a reviewer can follow the same lifecycle described above.
+
+| # | Evidence | File |
+|---|---|---|
+| 01 | Dispatcher dashboard | [`01-dispatcher-dashboard.png`](screenshots/01-dispatcher-dashboard.png) |
+| 02 | Job dispatch | [`02-job-dispatch.png`](screenshots/02-job-dispatch.png) |
+| 03 | Technician workspace | [`03-technician-workspace.png`](screenshots/03-technician-workspace.png) |
+| 04 | Technician execution | [`04-technician-execution.png`](screenshots/04-technician-execution.png) |
+| 05 | Job completed | [`05-job-completed.png`](screenshots/05-job-completed.png) |
+| 06 | Customer sign-off | [`06-customer-signoff.png`](screenshots/06-customer-signoff.png) |
+| 07 | Invoice | [`07-invoice.png`](screenshots/07-invoice.png) |
+| 08 | Invoice paid | [`08-invoice-paid.png`](screenshots/08-invoice-paid.png) |
+| 09 | Service report | [`09-service-report.png`](screenshots/09-service-report.png) |
+
+See the [screenshot evidence index](screenshots/README.md) for the complete set.
+
+## 9. Execution Lessons
 
 ### Authorization must be enforced below the UI
 
@@ -135,7 +153,7 @@ The workflow was tested against the deployed application, which verified integra
 
 The invoice was generated from the actual completed service record, including the real parts usage, instead of using unrelated mock invoice data.
 
-## 9. Exceptions / Caveats
+## 10. Exceptions / Caveats
 
 This freeze point is a stable engineering baseline, not a formal declaration of enterprise production readiness.
 
@@ -149,7 +167,7 @@ The following remain outside the completed baseline or need deeper verification:
 - production observability/alerting;
 - broad billing edge-case testing.
 
-## 10. Next Phase
+## 11. Next Phase
 
 The recommended next phase is **Operations & Audit Hardening**:
 
@@ -164,7 +182,7 @@ The recommended next phase is **Operations & Audit Hardening**:
 9. Authorization matrix tests.
 10. Monitoring and structured error reporting.
 
-## 11. Freeze Rule
+## 12. Freeze Rule
 
 The freeze point means the verified core lifecycle should now be treated as the stable baseline. Future development should be implemented as explicit feature work on top of this baseline rather than casually changing the verified workflow.
 
