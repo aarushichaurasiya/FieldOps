@@ -125,7 +125,7 @@ export default async function DispatchJobPage({ params, searchParams }: Props) {
                       ))}
                     </select>
                   </label>
-                  <button type="submit" className="w-full cursor-pointer rounded-xl bg-[var(--color-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5">
+                  <button type="submit" aria-label="Assign selected technician" className="w-full cursor-pointer rounded-xl bg-[var(--color-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5">
                     {activeAssignment ? "Save reassignment" : "Assign technician"}
                   </button>
                 </form>
