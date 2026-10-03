@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createCustomerRequest, provisionCustomerWorkspace, updateCustomerRequest } from "@/lib/requests";
+import { createCustomerRequest, provisionCustomerWorkspace, signOffCustomerJob, updateCustomerRequest } from "@/lib/requests";
 import { serviceRequestSchema, serviceRequestUpdateSchema } from "@/lib/validation/service-request";
 
 export async function provisionWorkspace() {
@@ -90,4 +90,39 @@ export async function updateRequest(formData: FormData) {
   revalidatePath("/requests");
   revalidatePath(`/requests/${id}`);
   redirect(`/requests/${id}?saved=1`);
+}
+
+export async function customerSignOff(formData: FormData) {
+  const requestId = String(formData.get("request_id") ?? "");
+  const jobId = String(formData.get("job_id") ?? "");
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  if (!requestId || !jobId) {
+    redirect(`/requests/${encodeURIComponent(requestId)}?error=${encodeURIComponent("The completed job could not be identified.")}`);
+  }
+
+  try {
+    await signOffCustomerJob(jobId, notes);
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message.includes("SIGN_OFF_ALREADY_SUBMITTED")
+        ? "This job has already been signed off."
+        : error instanceof Error && error.message.includes("JOB_NOT_COMPLETED")
+          ? "The job must be completed before it can be signed off."
+          : error instanceof Error && error.message.includes("JOB_NOT_FOUND_OR_FORBIDDEN")
+            ? "You are not authorized to sign off this job."
+            : error instanceof Error && error.message.includes("CUSTOMER_PROFILE_REQUIRED")
+              ? "Your account is not provisioned as a FieldOps customer."
+              : error instanceof Error && error.message.includes("AUTH_REQUIRED")
+                ? "Please sign in before signing off the job."
+                : error instanceof Error
+                  ? error.message
+                  : "Unable to complete customer sign-off.";
+
+    redirect(`/requests/${encodeURIComponent(requestId)}?error=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/requests");
+  revalidatePath(`/requests/${requestId}`);
+  redirect(`/requests/${requestId}?signed=1`);
 }
