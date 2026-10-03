@@ -36,15 +36,18 @@ export async function createJobAction(formData: FormData) {
     redirect("/dispatch?error=Invalid%20service%20request.");
   }
 
+  let jobId: string;
   try {
     const job = await createJobForRequest(parsed.data.request_id);
     if (!job) throw new Error("JOB_CREATION_FAILED");
-    revalidatePath("/dispatch");
-    revalidatePath(`/dispatch/jobs/${job.id}`);
-    redirect(`/dispatch/jobs/${job.id}`);
+    jobId = job.id;
   } catch (error) {
     redirect(`/dispatch?error=${encodeURIComponent(dispatchError(error))}`);
   }
+
+  revalidatePath("/dispatch");
+  revalidatePath(`/dispatch/jobs/${jobId}`);
+  redirect(`/dispatch/jobs/${jobId}`);
 }
 
 export async function assignJobAction(formData: FormData) {
@@ -59,12 +62,13 @@ export async function assignJobAction(formData: FormData) {
 
   try {
     await assignJob(parsed.data.job_id, parsed.data.technician_id);
-    revalidatePath("/dispatch");
-    revalidatePath(`/dispatch/jobs/${parsed.data.job_id}`);
-    redirect(`/dispatch/jobs/${parsed.data.job_id}?saved=assigned`);
   } catch (error) {
     redirect(`/dispatch/jobs/${parsed.data.job_id}?error=${encodeURIComponent(dispatchError(error))}`);
   }
+
+  revalidatePath("/dispatch");
+  revalidatePath(`/dispatch/jobs/${parsed.data.job_id}`);
+  redirect(`/dispatch/jobs/${parsed.data.job_id}?saved=assigned`);
 }
 
 export async function unassignJobAction(formData: FormData) {
@@ -79,10 +83,11 @@ export async function unassignJobAction(formData: FormData) {
 
   try {
     await unassignJob(parsed.data.job_id, parsed.data.assignment_id);
-    revalidatePath("/dispatch");
-    revalidatePath(`/dispatch/jobs/${parsed.data.job_id}`);
-    redirect(`/dispatch/jobs/${parsed.data.job_id}?saved=unassigned`);
   } catch (error) {
     redirect(`/dispatch/jobs/${parsed.data.job_id}?error=${encodeURIComponent(dispatchError(error))}`);
   }
+
+  revalidatePath("/dispatch");
+  revalidatePath(`/dispatch/jobs/${parsed.data.job_id}`);
+  redirect(`/dispatch/jobs/${parsed.data.job_id}?saved=unassigned`);
 }
