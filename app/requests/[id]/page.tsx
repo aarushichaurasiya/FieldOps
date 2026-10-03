@@ -1,155 +1,40 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { customerSignOff, updateRequest } from "../actions";
-import { getCurrentCustomer, getCustomerJobCompletion, getCustomerRequest } from "@/lib/requests";
+import { getCurrentCustomer, getCustomerInvoice, getCustomerJobCompletion, getCustomerRequest } from "@/lib/requests";
 
-type Props = {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; signed?: string }>;
-};
-
-function formatDate(value: string | null) {
-  return value ? new Date(value).toLocaleString() : "—";
-}
-
-function formatCurrency(cents: number) {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(cents / 100);
-}
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; saved?: string; signed?: string }> };
+function formatDate(value: string | null) { return value ? new Date(value).toLocaleString() : "—"; }
+function formatCurrency(cents: number) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(cents / 100); }
 
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
   const query = await searchParams;
   const { user } = await getCurrentCustomer();
-
   if (!user) redirect("/auth/login");
-
   const request = await getCustomerRequest(id);
   if (!request) notFound();
-
   const completion = await getCustomerJobCompletion(id);
-  const completedJob = completion?.job?.status === "completed" ? completion.job : null;
+  const completedJob = ["completed", "awaiting_signoff", "signed_off", "invoiced"].includes(completion?.job?.status ?? "") ? completion?.job : null;
+  const customerInvoice = completion?.sign_off ? await getCustomerInvoice(id) : null;
 
   return (
-    <main className="min-h-screen bg-[var(--color-lilac)] px-5 py-10 text-[var(--color-ink)] sm:px-8">
-      <div className="mx-auto max-w-5xl">
-        <Link href="/requests" className="text-sm font-semibold text-[var(--color-blue)]">← Service requests</Link>
-        <div className="mt-8 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--color-accent)]">Request detail</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-tight">{request.title}</h1>
-            <p className="mt-2 text-sm text-slate-500">Created {new Date(request.created_at).toLocaleString()}</p>
-          </div>
-          <span className="rounded-full bg-violet-100 px-3 py-1.5 text-xs font-semibold text-violet-800">{request.status.replace("_", " ")}</span>
-        </div>
+    <main className="min-h-screen bg-[var(--color-lilac)] px-5 py-10 text-[var(--color-ink)] sm:px-8"><div className="mx-auto max-w-5xl">
+      <Link href="/requests" className="text-sm font-semibold text-[var(--color-blue)]">← Service requests</Link>
+      <div className="mt-8 flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--color-accent)]">Request detail</p><h1 className="mt-2 text-4xl font-semibold tracking-tight">{request.title}</h1><p className="mt-2 text-sm text-slate-500">Created {new Date(request.created_at).toLocaleString()}</p></div><span className="rounded-full bg-violet-100 px-3 py-1.5 text-xs font-semibold text-violet-800">{request.status.replace("_", " ")}</span></div>
+      {query.error ? <p className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{query.error}</p> : null}
+      {query.saved ? <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Request updated.</p> : null}
+      {query.signed ? <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Customer sign-off recorded successfully.</p> : null}
 
-        {query.error ? <p className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{query.error}</p> : null}
-        {query.saved ? <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Request updated.</p> : null}
-        {query.signed ? <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Customer sign-off recorded successfully.</p> : null}
+      {completedJob ? <section className="mt-8 rounded-3xl border border-emerald-200 bg-white p-7 shadow-sm"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Job completion</p><h2 className="mt-2 text-2xl font-semibold">Work completed</h2><p className="mt-2 text-sm text-slate-500">Review the technician's work and the approval record.</p></div><span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-800">{completedJob.status.replaceAll("_", " ")}</span></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Technician</p><p className="mt-1 font-semibold">{completion?.technician_name || "Assigned technician"}</p></div><div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Started</p><p className="mt-1 text-sm font-semibold">{formatDate(completedJob.started_at)}</p></div><div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Completed</p><p className="mt-1 text-sm font-semibold">{formatDate(completedJob.completed_at)}</p></div><div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Parts used</p><p className="mt-1 font-semibold">{completion?.parts.length ?? 0}</p></div></div>
+        <div className="mt-7 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-slate-200 p-5"><h3 className="font-semibold">Work logs</h3><div className="mt-4 space-y-3">{completion?.work_logs.length ? completion.work_logs.map((log) => <div key={log.id} className="rounded-xl bg-slate-50 p-4"><p className="text-sm leading-6">{log.note || "Work performed."}</p><p className="mt-2 text-xs text-slate-500">{formatDate(log.started_at)}{log.ended_at ? ` → ${formatDate(log.ended_at)}` : ""}</p></div>) : <p className="text-sm text-slate-500">No work logs recorded.</p>}</div></div><div className="rounded-2xl border border-slate-200 p-5"><h3 className="font-semibold">Parts & materials</h3><div className="mt-4 space-y-3">{completion?.parts.length ? completion.parts.map((part) => <div key={part.id} className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 p-4"><div><p className="text-sm font-semibold">{part.part_name}</p><p className="mt-1 text-xs text-slate-500">Quantity {part.quantity}</p></div><p className="text-sm font-semibold">{formatCurrency(part.unit_price_snapshot_cents)} / unit</p></div>) : <p className="text-sm text-slate-500">No parts or materials recorded.</p>}</div></div></div>
+        <div className="mt-5 rounded-2xl border border-slate-200 p-5"><h3 className="font-semibold">Completion notes</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{completedJob.completion_notes || "No completion notes were provided."}</p></div>
+      </section> : null}
 
-        {completedJob ? (
-          <section className="mt-8 rounded-3xl border border-emerald-200 bg-white p-7 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Job completion</p>
-                <h2 className="mt-2 text-2xl font-semibold">Work completed</h2>
-                <p className="mt-2 text-sm text-slate-500">Review the technician's work before approving the job.</p>
-              </div>
-              <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-800">Completed</span>
-            </div>
+      {completedJob ? <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">{completion?.sign_off ? <div><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Customer sign-off</p><h2 className="mt-2 text-2xl font-semibold">Signed off</h2></div><span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-800">Approved</span></div><p className="mt-4 text-sm text-slate-600">Approved by {completion.sign_off.signer_name} on {formatDate(completion.sign_off.signed_at)}.</p>{completion.sign_off.notes ? <p className="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-6">{completion.sign_off.notes}</p> : null}<div className="mt-5 flex flex-wrap gap-3"><Link href={`/requests/${id}/report`} className="rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">View service report</Link>{customerInvoice ? <Link href={`/requests/${id}/invoice`} className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold">View invoice · {customerInvoice.invoice.number}</Link> : null}</div></div> : <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">Customer sign-off</p><h2 className="mt-2 text-2xl font-semibold">Approve completed work</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Confirm that you have reviewed the completion summary. Your approval will be recorded against this completed job.</p><form action={customerSignOff} className="mt-5 space-y-4"><input type="hidden" name="request_id" value={id} /><input type="hidden" name="job_id" value={completedJob.id} /><label className="block text-sm font-medium"><span className="mb-2 block">Comment <span className="font-normal text-slate-400">(optional)</span></span><textarea name="notes" rows={4} placeholder="Add a note about the completed work..." className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label><button type="submit" className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto">Approve &amp; Sign Off</button></form></div>}</section> : null}
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Technician</p><p className="mt-1 font-semibold">{completion?.technician_name || "Assigned technician"}</p></div>
-              <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Started</p><p className="mt-1 text-sm font-semibold">{formatDate(completedJob.started_at)}</p></div>
-              <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Completed</p><p className="mt-1 text-sm font-semibold">{formatDate(completedJob.completed_at)}</p></div>
-              <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Parts used</p><p className="mt-1 font-semibold">{completion?.parts.length ?? 0}</p></div>
-            </div>
-
-            <div className="mt-7 grid gap-5 lg:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 p-5">
-                <h3 className="font-semibold">Work logs</h3>
-                <div className="mt-4 space-y-3">
-                  {completion?.work_logs.length ? completion.work_logs.map((log) => (
-                    <div key={log.id} className="rounded-xl bg-slate-50 p-4">
-                      <p className="text-sm leading-6">{log.note || "Work performed."}</p>
-                      <p className="mt-2 text-xs text-slate-500">{formatDate(log.started_at)}{log.ended_at ? ` → ${formatDate(log.ended_at)}` : ""}</p>
-                    </div>
-                  )) : <p className="text-sm text-slate-500">No work logs recorded.</p>}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 p-5">
-                <h3 className="font-semibold">Parts & materials</h3>
-                <div className="mt-4 space-y-3">
-                  {completion?.parts.length ? completion.parts.map((part) => (
-                    <div key={part.id} className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 p-4">
-                      <div><p className="text-sm font-semibold">{part.part_name}</p><p className="mt-1 text-xs text-slate-500">Quantity {part.quantity}</p></div>
-                      <p className="text-sm font-semibold">{formatCurrency(part.unit_price_snapshot_cents)} / unit</p>
-                    </div>
-                  )) : <p className="text-sm text-slate-500">No parts or materials recorded.</p>}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-slate-200 p-5">
-              <h3 className="font-semibold">Completion notes</h3>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{completedJob.completion_notes || "No completion notes were provided."}</p>
-            </div>
-          </section>
-        ) : null}
-
-        {completedJob ? (
-          <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-            {completion?.sign_off ? (
-              <div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Customer sign-off</p>
-                    <h2 className="mt-2 text-2xl font-semibold">Signed off</h2>
-                  </div>
-                  <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-800">Approved</span>
-                </div>
-                <p className="mt-4 text-sm text-slate-600">Approved by {completion.sign_off.signer_name} on {formatDate(completion.sign_off.signed_at)}.</p>
-                {completion.sign_off.notes ? <p className="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-6">{completion.sign_off.notes}</p> : null}
-              </div>
-            ) : (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">Customer sign-off</p>
-                <h2 className="mt-2 text-2xl font-semibold">Approve completed work</h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Confirm that you have reviewed the completion summary. Your approval will be recorded against this completed job.</p>
-                <form action={customerSignOff} className="mt-5 space-y-4">
-                  <input type="hidden" name="request_id" value={id} />
-                  <input type="hidden" name="job_id" value={completedJob.id} />
-                  <label className="block text-sm font-medium"><span className="mb-2 block">Comment <span className="font-normal text-slate-400">(optional)</span></span><textarea name="notes" rows={4} placeholder="Add a note about the completed work..." className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label>
-                  <button type="submit" className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto">Approve &amp; Sign Off</button>
-                </form>
-              </div>
-            )}
-          </section>
-        ) : null}
-
-        <div className="mt-8 grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="font-semibold">Request information</h2>
-            <dl className="mt-5 space-y-5 text-sm">
-              <div><dt className="text-slate-500">Description</dt><dd className="mt-1 whitespace-pre-wrap leading-6">{request.description || "No description provided."}</dd></div>
-              <div><dt className="text-slate-500">Priority</dt><dd className="mt-1 font-semibold capitalize">{request.priority}</dd></div>
-              <div><dt className="text-slate-500">Status</dt><dd className="mt-1 font-semibold capitalize">{request.status.replace("_", " ")}</dd></div>
-            </dl>
-          </section>
-
-          <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="font-semibold">Edit request</h2>
-            <p className="mt-2 text-xs leading-5 text-slate-500">Customers can edit request details. Status and ownership remain server-controlled.</p>
-            <form action={updateRequest} className="mt-5 space-y-4">
-              <input type="hidden" name="id" value={request.id} />
-              <label className="block text-sm font-medium"><span className="mb-2 block">Title</span><input name="title" defaultValue={request.title} required className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label>
-              <label className="block text-sm font-medium"><span className="mb-2 block">Priority</span><select name="priority" defaultValue={request.priority} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
-              <label className="block text-sm font-medium"><span className="mb-2 block">Description</span><textarea name="description" defaultValue={request.description ?? ""} rows={5} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label>
-              <button className="w-full rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Save changes</button>
-            </form>
-          </section>
-        </div>
-      </div>
-    </main>
+      <div className="mt-8 grid gap-5 lg:grid-cols-[1.3fr_0.7fr]"><section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm"><h2 className="font-semibold">Request information</h2><dl className="mt-5 space-y-5 text-sm"><div><dt className="text-slate-500">Description</dt><dd className="mt-1 whitespace-pre-wrap leading-6">{request.description || "No description provided."}</dd></div><div><dt className="text-slate-500">Priority</dt><dd className="mt-1 font-semibold capitalize">{request.priority}</dd></div><div><dt className="text-slate-500">Status</dt><dd className="mt-1 font-semibold capitalize">{request.status.replace("_", " ")}</dd></div></dl></section><section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm"><h2 className="font-semibold">Edit request</h2><p className="mt-2 text-xs leading-5 text-slate-500">Customers can edit request details. Status and ownership remain server-controlled.</p><form action={updateRequest} className="mt-5 space-y-4"><input type="hidden" name="id" value={request.id} /><label className="block text-sm font-medium"><span className="mb-2 block">Title</span><input name="title" defaultValue={request.title} required className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label><label className="block text-sm font-medium"><span className="mb-2 block">Priority</span><select name="priority" defaultValue={request.priority} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label className="block text-sm font-medium"><span className="mb-2 block">Description</span><textarea name="description" defaultValue={request.description ?? ""} rows={5} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-violet-400 focus:ring-2" /></label><button className="w-full rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Save changes</button></form></section></div>
+    </div></main>
   );
 }
