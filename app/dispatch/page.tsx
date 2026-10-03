@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { getDispatcherContext, listAvailableTechnicians, listDispatchQueue } from "@/lib/dispatch";
 import { dispatchFilterSchema } from "@/lib/validation/dispatch";
-import { createJobAction } from "./actions";
 
 const statusStyles: Record<string, string> = {
   submitted: "bg-violet-100 text-violet-800",
@@ -135,7 +134,7 @@ export default async function DispatchPage({ searchParams }: Props) {
                         {item.job ? (
                           <Link href={`/dispatch/jobs/${item.job.id}`} className="text-sm font-semibold text-[var(--color-blue)] hover:underline">Open job →</Link>
                         ) : (
-                          <form action={createJobAction} className="relative z-10">
+                          <form method="post" action="/api/dispatch/jobs" className="relative z-10">
                             <input type="hidden" name="request_id" value={item.request.id} />
                             <button
                               type="submit"
