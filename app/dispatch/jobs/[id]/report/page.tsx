@@ -1,0 +1,32 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { getServiceReport } from "@/lib/billing";
+import { PrintButton } from "@/components/print-button";
+
+function date(value: string | null) { return value ? new Date(value).toLocaleString() : "—"; }
+function money(cents: number) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(cents / 100); }
+
+export default async function DispatcherServiceReport({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const report = await getServiceReport(id);
+  if (!report) redirect("/dashboard?error=report_not_available");
+
+  return (
+    <main className="min-h-screen bg-[var(--color-lilac)] px-5 py-8 text-[var(--color-ink)] sm:px-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 print:hidden"><Link href={`/dispatch/jobs/${id}`} className="text-sm font-semibold text-[var(--color-blue)]">← Job workspace</Link><PrintButton /></div>
+        <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm print:rounded-none print:border-0 print:shadow-none">
+          <header className="border-b border-slate-200 pb-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-accent)]">FieldOps service report</p><h1 className="mt-2 text-4xl font-semibold">{report.request.title}</h1><p className="mt-2 text-sm text-slate-500">Job {report.job.id}</p></header>
+          <section className="mt-7 grid gap-5 sm:grid-cols-2"><div><p className="text-xs text-slate-500">Customer</p><p className="mt-1 font-semibold">{report.customer?.name ?? "—"}</p><p className="text-sm text-slate-500">{report.customer?.email ?? report.customer?.phone ?? ""}</p></div><div><p className="text-xs text-slate-500">Site</p><p className="mt-1 font-semibold">{report.site?.name ?? "—"}</p><p className="text-sm text-slate-500">{[report.site?.address_line1, report.site?.city, report.site?.state, report.site?.postal_code].filter(Boolean).join(", ")}</p></div><div><p className="text-xs text-slate-500">Technician</p><p className="mt-1 font-semibold">{report.technician_name ?? "—"}</p></div><div><p className="text-xs text-slate-500">Status</p><p className="mt-1 font-semibold capitalize">{report.job.status.replaceAll("_", " ")}</p></div><div><p className="text-xs text-slate-500">Started</p><p className="mt-1 font-semibold">{date(report.job.started_at)}</p></div><div><p className="text-xs text-slate-500">Completed</p><p className="mt-1 font-semibold">{date(report.job.completed_at)}</p></div></section>
+          <section className="mt-8"><h2 className="text-lg font-semibold">Service request</h2><p className="mt-2 text-sm leading-6">{report.request.description || "No description provided."}</p></section>
+          <section className="mt-8"><h2 className="text-lg font-semibold">Work performed</h2><div className="mt-3 space-y-3">{report.work_logs.length ? report.work_logs.map((log) => <div key={log.id} className="rounded-2xl bg-slate-50 p-4"><p className="text-sm leading-6">{log.note || "Work performed."}</p><p className="mt-2 text-xs text-slate-500">{date(log.started_at)} → {date(log.ended_at)}</p></div>) : <p className="text-sm text-slate-500">No work logs recorded.</p>}</div></section>
+          <section className="mt-8"><h2 className="text-lg font-semibold">Parts & materials</h2><div className="mt-3 overflow-hidden rounded-2xl border border-slate-200"><table className="w-full text-sm"><thead className="bg-slate-50"><tr><th className="px-4 py-3 text-left">Part</th><th className="px-4 py-3 text-right">Qty</th><th className="px-4 py-3 text-right">Unit</th><th className="px-4 py-3 text-right">Total</th></tr></thead><tbody className="divide-y divide-slate-100">{report.parts.map((part) => <tr key={part.id}><td className="px-4 py-3">{part.part_name}</td><td className="px-4 py-3 text-right">{part.quantity}</td><td className="px-4 py-3 text-right">{money(part.unit_price_snapshot_cents)}</td><td className="px-4 py-3 text-right">{money(part.quantity * part.unit_price_snapshot_cents)}</td></tr>)}</tbody></table></div></section>
+          <section className="mt-8"><h2 className="text-lg font-semibold">Completion notes</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6">{report.job.completion_notes || "No completion notes provided."}</p></section>
+          <section className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><h2 className="font-semibold text-emerald-900">Customer sign-off</h2>{report.sign_off ? <><p className="mt-2 text-sm text-emerald-900">Approved by {report.sign_off.signer_name} on {date(report.sign_off.signed_at)}.</p>{report.sign_off.notes ? <p className="mt-3 text-sm text-emerald-900">{report.sign_off.notes}</p> : null}</> : <p className="mt-2 text-sm text-emerald-900">Not recorded.</p>}</section>
+          {report.invoice ? <section className="mt-8"><h2 className="text-lg font-semibold">Invoice</h2><div className="mt-3 grid gap-3 sm:grid-cols-4"><div><p className="text-xs text-slate-500">Number</p><p className="mt-1 font-semibold">{report.invoice.number}</p></div><div><p className="text-xs text-slate-500">Status</p><p className="mt-1 font-semibold capitalize">{report.invoice.status}</p></div><div><p className="text-xs text-slate-500">Subtotal</p><p className="mt-1 font-semibold">{money(report.invoice.subtotal_cents)}</p></div><div><p className="text-xs text-slate-500">Total</p><p className="mt-1 font-semibold">{money(report.invoice.total_cents)}</p></div></div></section> : null}
+          <footer className="mt-10 border-t border-slate-200 pt-5 text-xs text-slate-500">Generated by FieldOps • Service completion record</footer>
+        </article>
+      </div>
+    </main>
+  );
+}
