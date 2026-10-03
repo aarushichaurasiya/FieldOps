@@ -7,6 +7,7 @@ import {
   createJobForRequest,
   unassignJob,
 } from "@/lib/dispatch";
+import { createInvoiceForJob, issueInvoice, markInvoicePaid } from "@/lib/billing";
 import {
   assignmentSchema,
   createJobSchema,
@@ -25,6 +26,14 @@ function dispatchError(error: unknown) {
     TECHNICIAN_NOT_AVAILABLE: "That technician is not active in this organization.",
     ASSIGNMENT_NOT_ACTIVE: "That assignment is already closed.",
     INVALID_JOB_STATUS_TRANSITION: "The requested job status transition is not allowed.",
+    JOB_NOT_SIGNED_OFF: "Customer sign-off is required before invoicing.",
+    CUSTOMER_SIGNOFF_REQUIRED: "Customer sign-off is required before invoicing.",
+    INVALID_LABOR_CHARGE: "Labor charge must be zero or greater.",
+    INVALID_TAX_RATE: "Tax rate must be between 0% and 100%.",
+    INVOICE_NOT_FOUND: "The invoice was not found.",
+    INVOICE_NOT_DRAFT: "Only draft invoices can be issued.",
+    INVOICE_NOT_ISSUED: "Only issued invoices can be marked paid.",
+    INVOICE_CREATION_FAILED: "The invoice could not be created.",
   };
 
   return messages[error.message] ?? error.message;
@@ -32,9 +41,7 @@ function dispatchError(error: unknown) {
 
 export async function createJobAction(formData: FormData) {
   const parsed = createJobSchema.safeParse({ request_id: formData.get("request_id") });
-  if (!parsed.success) {
-    redirect("/dispatch?error=Invalid%20service%20request.");
-  }
+  if (!parsed.success) redirect("/dispatch?error=Invalid%20service%20request.");
 
   let jobId: string;
   try {
@@ -51,14 +58,8 @@ export async function createJobAction(formData: FormData) {
 }
 
 export async function assignJobAction(formData: FormData) {
-  const parsed = assignmentSchema.safeParse({
-    job_id: formData.get("job_id"),
-    technician_id: formData.get("technician_id"),
-  });
-
-  if (!parsed.success) {
-    redirect("/dispatch?error=Choose a valid technician.");
-  }
+  const parsed = assignmentSchema.safeParse({ job_id: formData.get("job_id"), technician_id: formData.get("technician_id") });
+  if (!parsed.success) redirect("/dispatch?error=Choose a valid technician.");
 
   try {
     await assignJob(parsed.data.job_id, parsed.data.technician_id);
@@ -72,14 +73,8 @@ export async function assignJobAction(formData: FormData) {
 }
 
 export async function unassignJobAction(formData: FormData) {
-  const parsed = unassignmentSchema.safeParse({
-    job_id: formData.get("job_id"),
-    assignment_id: formData.get("assignment_id"),
-  });
-
-  if (!parsed.success) {
-    redirect("/dispatch?error=Invalid assignment.");
-  }
+  const parsed = unassignmentSchema.safeParse({ job_id: formData.get("job_id"), assignment_id: formData.get("assignment_id") });
+  if (!parsed.success) redirect("/dispatch?error=Invalid assignment.");
 
   try {
     await unassignJob(parsed.data.job_id, parsed.data.assignment_id);
@@ -90,4 +85,53 @@ export async function unassignJobAction(formData: FormData) {
   revalidatePath("/dispatch");
   revalidatePath(`/dispatch/jobs/${parsed.data.job_id}`);
   redirect(`/dispatch/jobs/${parsed.data.job_id}?saved=unassigned`);
+}
+
+export async function createInvoiceAction(formData: FormData) {
+  const jobId = String(formData.get("job_id") ?? "");
+  const laborRupees = Number(formData.get("labor_charge") ?? 0);
+  const taxPercent = Number(formData.get("tax_rate") ?? 0);
+  const laborCents = Math.round(laborRupees * 100);
+  const taxBps = Math.round(taxPercent * 100);
+
+  if (!jobId || !Number.isFinite(laborCents) || !Number.isFinite(taxBps)) {
+    redirect(`/dispatch/jobs/${jobId}?error=Enter valid invoice values.`);
+  }
+
+  try {
+    const invoice = await createInvoiceForJob(jobId, laborCents, taxBps);
+    revalidatePath(`/dispatch/jobs/${jobId}`);
+    revalidatePath(`/dispatch/invoices/${invoice.id}`);
+    redirect(`/dispatch/invoices/${invoice.id}?saved=created`);
+  } catch (error) {
+    redirect(`/dispatch/jobs/${jobId}?error=${encodeURIComponent(dispatchError(error))}`);
+  }
+}
+
+export async function issueInvoiceAction(formData: FormData) {
+  const invoiceId = String(formData.get("invoice_id") ?? "");
+  const jobId = String(formData.get("job_id") ?? "");
+  try {
+    await issueInvoice(invoiceId);
+    revalidatePath(`/dispatch/jobs/${jobId}`);
+    revalidatePath(`/dispatch/invoices/${invoiceId}`);
+    revalidatePath(`/requests`);
+    redirect(`/dispatch/invoices/${invoiceId}?saved=issued`);
+  } catch (error) {
+    redirect(`/dispatch/invoices/${invoiceId}?error=${encodeURIComponent(dispatchError(error))}`);
+  }
+}
+
+export async function markInvoicePaidAction(formData: FormData) {
+  const invoiceId = String(formData.get("invoice_id") ?? "");
+  const jobId = String(formData.get("job_id") ?? "");
+  try {
+    await markInvoicePaid(invoiceId);
+    revalidatePath(`/dispatch/jobs/${jobId}`);
+    revalidatePath(`/dispatch/invoices/${invoiceId}`);
+    revalidatePath(`/requests`);
+    redirect(`/dispatch/invoices/${invoiceId}?saved=paid`);
+  } catch (error) {
+    redirect(`/dispatch/invoices/${invoiceId}?error=${encodeURIComponent(dispatchError(error))}`);
+  }
 }
