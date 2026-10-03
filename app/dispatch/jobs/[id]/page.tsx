@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getDispatchJob, listAvailableTechnicians } from "@/lib/dispatch";
-import { assignJobAction, unassignJobAction } from "../../actions";
+import { unassignJobAction } from "../../actions";
 
 const statusStyles: Record<string, string> = {
   requested: "bg-violet-100 text-violet-800",
@@ -51,13 +51,13 @@ export default async function DispatchJobPage({ params, searchParams }: Props) {
 
         {query.error ? <p className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{query.error}</p> : null}
         {query.saved === "assigned" ? <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Technician assignment saved.</p> : null}
-        {query.saved === "unassigned" ? <p className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Technician assignment removed. The job is back in the unassigned queue.</p> : null}
+        {query.saved === "unassigned" ? <p className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Technician assignment removed. The job is back in the unassigned queue.</p> : null}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
             <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
               <h2 className="font-semibold">Request context</h2>
-              <dl className="mt-5 grid gap-5 sm:grid-cols-2 text-sm">
+              <dl className="mt-5 grid gap-5 text-sm sm:grid-cols-2">
                 <div><dt className="text-slate-500">Customer</dt><dd className="mt-1 font-semibold">{request?.customers?.name ?? "—"}</dd></div>
                 <div><dt className="text-slate-500">Contact</dt><dd className="mt-1">{request?.customers?.email ?? request?.customers?.phone ?? "—"}</dd></div>
                 <div><dt className="text-slate-500">Site</dt><dd className="mt-1 font-semibold">{request?.sites?.name ?? "No site selected"}</dd></div>
@@ -79,7 +79,7 @@ export default async function DispatchJobPage({ params, searchParams }: Props) {
                   <form action={unassignJobAction}>
                     <input type="hidden" name="job_id" value={job.id} />
                     <input type="hidden" name="assignment_id" value={activeAssignment.id} />
-                    <button className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">Unassign</button>
+                    <button type="submit" className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">Unassign</button>
                   </form>
                 ) : null}
               </div>
@@ -112,7 +112,7 @@ export default async function DispatchJobPage({ params, searchParams }: Props) {
 
             {job.status === "requested" || job.status === "assigned" ? (
               technicians.length ? (
-                <form action={assignJobAction} className="mt-6 space-y-4">
+                <form method="post" action="/api/dispatch/jobs/assign" className="mt-6 space-y-4">
                   <input type="hidden" name="job_id" value={job.id} />
                   <label className="block text-sm font-medium">
                     <span className="mb-2 block">Technician</span>
@@ -125,7 +125,7 @@ export default async function DispatchJobPage({ params, searchParams }: Props) {
                       ))}
                     </select>
                   </label>
-                  <button className="w-full rounded-xl bg-[var(--color-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5">
+                  <button type="submit" className="w-full cursor-pointer rounded-xl bg-[var(--color-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5">
                     {activeAssignment ? "Save reassignment" : "Assign technician"}
                   </button>
                 </form>
