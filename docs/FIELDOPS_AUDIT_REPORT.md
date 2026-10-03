@@ -26,6 +26,7 @@ A real production HVAC job was taken through this lifecycle, including technicia
 - Service reporting and Print / Save PDF workflow
 - Database/RLS and protected mutation design observed during implementation
 - Production verification
+- Screenshot evidence captured during the freeze-point workflow
 - Remaining risks and recommended hardening
 
 ## 3. Requirements Traceability
@@ -141,7 +142,25 @@ The verified report flow represents:
 - Invoice information
 - Print / Save PDF
 
-## 9. Strengths
+## 9. Screenshot Evidence
+
+Nine screenshots were organized in `docs/screenshots/` as supporting visual evidence for the freeze-point workflow:
+
+| # | Evidence |
+|---|---|
+| 01 | Dispatcher dashboard |
+| 02 | Job dispatch |
+| 03 | Technician workspace |
+| 04 | Technician execution |
+| 05 | Job completed |
+| 06 | Customer sign-off |
+| 07 | Invoice |
+| 08 | Invoice paid |
+| 09 | Service report |
+
+See the [screenshot evidence index](screenshots/README.md). The screenshots supplement the audit; they do not replace database/RLS, authorization, or automated-test evidence.
+
+## 10. Strengths
 
 - Real business workflow rather than generic CRUD
 - Role-specific experiences
@@ -151,8 +170,9 @@ The verified report flow represents:
 - Billing derived from actual service data
 - Service report closes the execution-to-billing loop
 - Production deployment and real scenario verification
+- Visual evidence organized around the verified workflow
 
-## 10. Findings / Remaining Risks
+## 11. Findings / Remaining Risks
 
 | ID | Finding | Priority |
 |---|---|---|
@@ -164,7 +184,7 @@ The verified report flow represents:
 | F-06 | Production observability and structured monitoring should be formalized | Medium |
 | F-07 | Billing edge cases such as multi-line, tax, labor, duplicate actions and concurrency need broader testing | Medium |
 
-## 11. Recommended Next Engineering Stage
+## 12. Recommended Next Engineering Stage
 
 1. Operations command center with KPIs and filters.
 2. Technician workload and schedule view.
@@ -177,7 +197,7 @@ The verified report flow represents:
 9. Production monitoring and structured error reporting.
 10. Final mobile/responsive QA.
 
-## 12. Final Audit Conclusion
+## 13. Final Audit Conclusion
 
 At the freeze point, FieldOps has achieved the core business lifecycle defined for the project: service request, dispatch, technician execution, customer sign-off, invoice generation, invoice issuance, payment marking, and service reporting/printing.
 
