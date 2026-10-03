@@ -10,6 +10,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase.from("profiles").select("full_name,status").eq("id", user.id).maybeSingle();
   const { data: memberships } = await supabase.from("organization_memberships").select("organization_id,role,status").eq("user_id", user.id).eq("status", "active");
+  const isTechnician = memberships?.some((membership) => membership.role === "technician");
 
   return (
     <main className="min-h-screen bg-[var(--color-lilac)] px-6 py-12 text-[var(--color-ink)]">
@@ -47,6 +48,19 @@ export default async function DashboardPage() {
             ) : <p className="mt-4 text-sm text-slate-500">No active organization membership yet. Customer/dispatcher provisioning is handled as part of the workflow stages.</p>}
           </section>
         </div>
+
+        {isTechnician ? (
+          <section className="mt-6 rounded-3xl border border-cyan-100 bg-white p-7 shadow-sm">
+            <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-700">Stage 3</p>
+                <h2 className="mt-2 text-2xl font-semibold">Technician workspace</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">View assigned field jobs and continue into the technician execution workflow.</p>
+              </div>
+              <Link href="/technician" className="shrink-0 rounded-xl bg-[var(--color-blue)] px-4 py-2.5 text-sm font-semibold text-white">Open technician workspace</Link>
+            </div>
+          </section>
+        ) : null}
 
         {memberships?.some((membership) => membership.role === "dispatcher" || membership.role === "admin") ? (
           <section className="mt-6 rounded-3xl border border-violet-100 bg-white p-7 shadow-sm">
